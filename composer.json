@@ -1,0 +1,34 @@
+{
+    "name": "atlas/pdo",
+    "type": "library",
+    "description": "An extension for Atlas PDO connections.",
+    "keywords": [
+        "pdo",
+        "sql"
+    ],
+    "homepage": "https://github.com/atlasphp/Atlas.Pdo",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Atlas.Pdo Contributors",
+            "homepage": "https://github.com/atlasphp/Atlas.Pdo/contributors"
+        }
+    ],
+    "require": {
+        "php": ">=7.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Atlas\\Pdo\\": "src/"
+        }
+    },
+    "require-dev": {
+        "pds/skeleton": "~1.0",
+        "phpunit/phpunit": "~7.0"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Atlas\\Pdo\\": "tests/"
+        }
+    }
+}
