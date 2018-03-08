@@ -55,6 +55,10 @@ class Connection
     {
         $sth = $this->prepare($statement);
         foreach ($values as $name => $args) {
+            if (is_int($name)) {
+                // sequential placeholders are 1-based
+                $name ++;
+            }
             settype($args, 'array');
             $sth->bindValue($name, ...$args);
         }
