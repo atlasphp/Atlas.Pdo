@@ -115,18 +115,18 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
 
     public function testFetchObject()
     {
-        $stm = "SELECT id, name FROM pdotest WHERE id = ?";
-        $actual = $this->connection->fetchObject($stm, [1]);
+        $stm = "SELECT id, name FROM pdotest WHERE id = :id";
+        $actual = $this->connection->fetchObject($stm, ['id' => 1]);
         $this->assertSame('1', $actual->id);
         $this->assertSame('Anna', $actual->name);
     }
 
     public function testFetchObject_withCtorArgs()
     {
-        $stm = "SELECT id, name FROM pdotest WHERE id = ?";
+        $stm = "SELECT id, name FROM pdotest WHERE id = :id";
         $actual = $this->connection->fetchObject(
             $stm,
-            [1],
+            ['id' => 1],
             'Atlas\Pdo\FakeObject',
             ['bar']
         );

@@ -54,7 +54,11 @@ class Connection
     public function perform(string $statement, array $values = []) : PDOStatement
     {
         $sth = $this->prepare($statement);
-        $sth->execute($values);
+        foreach ($values as $name => $args) {
+            settype($args, 'array');
+            $sth->bindValue($name, ...$args);
+        }
+        $sth->execute();
         return $sth;
     }
 
