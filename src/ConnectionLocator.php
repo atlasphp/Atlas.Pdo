@@ -34,6 +34,8 @@ class ConnectionLocator
 
     protected $write;
 
+    protected $isWriting = false;
+
     public function __construct(
         callable $default = null,
         array $read = [],
@@ -128,5 +130,16 @@ class ConnectionLocator
     public function hasWrite() : bool
     {
         return isset($this->write);
+    }
+
+    public function isWriting(bool $isWriting = null) : bool
+    {
+        if ($isWriting === null) {
+            return $this->isWriting;
+        }
+
+        $old = $this->isWriting;
+        $this->isWriting = $isWriting;
+        return $old;
     }
 }
