@@ -12,11 +12,27 @@ namespace Atlas\Pdo;
 
 class ConnectionLocator
 {
-    protected $default;
+    const DEFAULT = 'DEFAULT';
 
-    protected $read = [];
+    const READ = 'READ';
 
-    protected $write = [];
+    const WRITE = 'WRITE';
+
+    protected $factories = [
+        self::DEFAULT => null,
+        self::READ => [],
+        self::WRITE => [],
+    ];
+
+    protected $instances = [
+        self::DEFAULT => null,
+        self::READ => [],
+        self::WRITE => [],
+    ];
+
+    protected $read;
+
+    protected $write;
 
     public function __construct(
         callable $default = null,
@@ -26,9 +42,11 @@ class ConnectionLocator
         if ($default) {
             $this->setDefaultFactory($default);
         }
+
         foreach ($read as $name => $factory) {
             $this->setReadFactory($name, $factory);
         }
+
         foreach ($write as $name => $factory) {
             $this->setWriteFactory($name, $factory);
         }
@@ -36,59 +54,79 @@ class ConnectionLocator
 
     public function setDefaultFactory(callable $factory) : void
     {
-        $this->default = $factory;
+        $this->factories[static::DEFAULT] = $factory;
+    }
+
+    public function setReadFactory(string $name, callable $factory) : void
+    {
+        $this->factories[static::READ][$name] = $factory;
+    }
+
+    public function setWriteFactory(string $name, callable $factory) : void
+    {
+        $this->factories[static::WRITE][$name] = $factory;
     }
 
     public function getDefault() : Connection
     {
-        if (! $this->default instanceof Connection) {
-            $this->default = call_user_func($this->default);
+        if ($this->instances[static::DEFAULT] === null) {
+            $this->instances[static::DEFAULT] = ($this->factories[static::DEFAULT])();
         }
 
-        return $this->default;
+        return $this->instances[static::DEFAULT];
     }
 
-    public function setReadFactory($name, callable $factory) : void
+    public function getRead() : Connection
     {
-        $this->read[$name] = $factory;
+        if (! isset($this->read)) {
+            $this->read = $this->getType(static::READ);
+        }
+
+        return $this->read;
     }
 
-    public function getRead($name = '') : Connection
+    public function getWrite() : Connection
     {
-        return $this->getConnection('read', $name);
+        if (! isset($this->write)) {
+            $this->write = $this->getType(static::WRITE);
+        }
+
+        return $this->write;
     }
 
-    public function setWriteFactory($name, callable $factory) : void
+    protected function getType(string $type)
     {
-        $this->write[$name] = $factory;
-    }
-
-    public function getWrite($name = '') : Connection
-    {
-        return $this->getConnection('write', $name);
-    }
-
-    protected function getConnection($type, $name) : Connection
-    {
-        $connections = &$this->{$type};
-
-        if (empty($connections)) {
+        if (empty($this->factories[$type])) {
             return $this->getDefault();
         }
 
-        if ($name === '') {
-            $name = array_rand($connections);
+        if (! empty($this->instances[$type])) {
+            return reset($this->instances[$type]);
         }
 
-        if (! isset($connections[$name])) {
+        return $this->get($type, array_rand($this->factories[$type]));
+    }
+
+    public function get(string $type, string $name) : Connection
+    {
+        if (! isset($this->factories[$type][$name])) {
             throw Exception::connectionNotFound($type, $name);
         }
 
-        if (! $connections[$name] instanceof Connection) {
-            $factory = $connections[$name];
-            $connections[$name] = $factory();
+        if (! isset($this->instances[$type][$name])) {
+            $this->instances[$type][$name] = ($this->factories[$type][$name])();
         }
 
-        return $connections[$name];
+        return $this->instances[$type][$name];
+    }
+
+    public function hasRead() : bool
+    {
+        return isset($this->read);
+    }
+
+    public function hasWrite() : bool
+    {
+        return isset($this->write);
     }
 }

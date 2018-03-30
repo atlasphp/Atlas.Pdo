@@ -58,9 +58,12 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
     public function testGetReadDefault()
     {
         $locator = $this->newLocator();
+
+        $this->assertFalse($locator->hasRead());
         $actual = $locator->getRead();
         $expect = $this->conns['default'];
         $this->assertSame($expect, $actual);
+        $this->assertTrue($locator->hasRead());
     }
 
     public function testGetReadRandom()
@@ -73,34 +76,39 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
             $this->conns['read3'],
         ];
 
-        // try 10 times to make sure we get lots of random responses
-        for ($i = 1; $i <= 10; $i++) {
-            $actual = $locator->getRead();
-            $this->assertTrue(in_array($actual, $expect, true));
-        }
+        $actual = $locator->getRead();
+        $this->assertTrue(in_array($actual, $expect, true));
+
+        $again = $locator->getRead();
+        $this->assertSame($actual, $again);
     }
 
     public function testGetReadName()
     {
         $locator = $this->newLocator($this->read, $this->write);
-        $actual = $locator->getRead('read2');
+        $actual = $locator->get($locator::READ, 'read2');
         $expect = $this->conns['read2'];
         $this->assertSame($expect, $actual);
+
+        $again = $locator->getRead();
+        $this->assertSame($actual, $again);
     }
 
     public function testGetReadMissing()
     {
         $locator = $this->newLocator($this->read, $this->write);
         $this->expectException(Exception::CLASS);
-        $locator->getRead('no-such-connection');
+        $locator->get($locator::READ, 'no-such-connection');
     }
 
     public function testGetWriteDefault()
     {
         $locator = $this->newLocator();
+        $this->assertFalse($locator->hasWrite());
         $actual = $locator->getWrite();
         $expect = $this->conns['default'];
         $this->assertSame($expect, $actual);
+        $this->assertTrue($locator->hasWrite());
     }
 
     public function testGetWriteRandom()
@@ -113,25 +121,28 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
             $this->conns['write3'],
         ];
 
-        // try 10 times to make sure we get lots of random responses
-        for ($i = 1; $i <= 10; $i++) {
-            $actual = $locator->getWrite();
-            $this->assertTrue(in_array($actual, $expect, true));
-        }
+        $actual = $locator->getWrite();
+        $this->assertTrue(in_array($actual, $expect, true));
+
+        $again = $locator->getWrite();
+        $this->assertSame($actual, $again);
     }
 
     public function testGetWriteName()
     {
         $locator = $this->newLocator($this->read, $this->write);
-        $actual = $locator->getWrite('write2');
+        $actual = $locator->get($locator::WRITE, 'write2');
         $expect = $this->conns['write2'];
         $this->assertSame($expect, $actual);
+
+        $again = $locator->getWrite();
+        $this->assertSame($actual, $again);
     }
 
     public function testGetWriteMissing()
     {
         $locator = $this->newLocator($this->read, $this->write);
         $this->expectException(Exception::CLASS);
-        $locator->getWrite('no-such-connection');
+        $locator->get($locator::WRITE, 'no-such-connection');
     }
 }
