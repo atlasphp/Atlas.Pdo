@@ -34,7 +34,7 @@ class ConnectionLocator
 
     protected $write;
 
-    protected $isWriting = false;
+    protected $lockToWrite = false;
 
     public function __construct(
         callable $default = null,
@@ -80,6 +80,10 @@ class ConnectionLocator
 
     public function getRead() : Connection
     {
+        if ($this->lockToWrite) {
+            return $this->getWrite();
+        }
+
         if (! isset($this->read)) {
             $this->read = $this->getType(static::READ);
         }
@@ -132,14 +136,13 @@ class ConnectionLocator
         return isset($this->write);
     }
 
-    public function isWriting(bool $isWriting = null) : bool
+    public function lockToWrite(bool $lockToWrite = true) : void
     {
-        if ($isWriting === null) {
-            return $this->isWriting;
-        }
+        $this->lockToWrite = $lockToWrite;
+    }
 
-        $old = $this->isWriting;
-        $this->isWriting = $isWriting;
-        return $old;
+    public function isLockedToWrite() : bool
+    {
+        return $this->lockToWrite;
     }
 }
