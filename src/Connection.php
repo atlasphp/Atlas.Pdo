@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 /**
  *
  * This file is part of Atlas for PHP.
@@ -8,6 +6,8 @@ declare(strict_types=1);
  * @license https://opensource.org/licenses/MIT MIT
  *
  */
+declare(strict_types=1);
+
 namespace Atlas\Pdo;
 
 use Generator;
@@ -18,7 +18,7 @@ class Connection
 {
     protected $pdo;
 
-    public static function new(...$args)
+    public static function new(...$args) : Connection
     {
         return new static(new PDO(...$args));
     }
@@ -36,8 +36,10 @@ class Connection
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     }
 
-    public function __call(string $method, array $params)
-    {
+    public function __call(
+        string $method,
+        array $params
+    ) {
         return $this->pdo->$method(...$params);
     }
 
@@ -51,7 +53,10 @@ class Connection
         return $this->pdo;
     }
 
-    public function perform(string $statement, array $values = []) : PDOStatement
+    public function perform(
+        string $statement,
+        array $values = []
+    ) : PDOStatement
     {
         $sth = $this->prepare($statement);
         foreach ($values as $name => $args) {
@@ -66,19 +71,28 @@ class Connection
         return $sth;
     }
 
-    public function fetchAffected(string $statement, array $values = []) : int
+    public function fetchAffected(
+        string $statement,
+        array $values = []
+    ) : int
     {
         $sth = $this->perform($statement, $values);
         return $sth->rowCount();
     }
 
-    public function fetchAll(string $statement, array $values = []) : array
+    public function fetchAll(
+        string $statement,
+        array $values = []
+    ) : array
     {
         $sth = $this->perform($statement, $values);
         return $sth->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function fetchAssoc(string $statement, array $values = []) : array
+    public function fetchAssoc(
+        string $statement,
+        array $values = []
+    ) : array
     {
         $sth  = $this->perform($statement, $values);
         $data = [];
@@ -88,7 +102,11 @@ class Connection
         return $data;
     }
 
-    public function fetchColumn(string $statement, array $values = [], int $column = 0) : array
+    public function fetchColumn(
+        string $statement,
+        array $values = [],
+        int $column = 0
+    ) : array
     {
         $sth = $this->perform($statement, $values);
         return $sth->fetchAll(PDO::FETCH_COLUMN, $column);
@@ -98,7 +116,8 @@ class Connection
         string $statement,
         array $values = [],
         int $style = PDO::FETCH_COLUMN
-    ) : array {
+    ) : array
+    {
         $sth = $this->perform($statement, $values);
         return $sth->fetchAll(PDO::FETCH_GROUP | $style);
     }
@@ -123,7 +142,8 @@ class Connection
         array $values = [],
         string $class = 'stdClass',
         array $args = []
-    ) : array {
+    ) : array
+    {
         $sth = $this->perform($statement, $values);
 
         if (! empty($args)) {
@@ -133,7 +153,10 @@ class Connection
         return $sth->fetchAll(PDO::FETCH_CLASS, $class);
     }
 
-    public function fetchOne(string $statement, array $values = []) : ?array
+    public function fetchOne(
+        string $statement,
+        array $values = []
+    ) : ?array
     {
         $sth = $this->perform($statement, $values);
         $result = $sth->fetch(PDO::FETCH_ASSOC);
@@ -143,19 +166,28 @@ class Connection
         return $result;
     }
 
-    public function fetchPairs(string $statement, array $values = []) : array
+    public function fetchKeyPair(
+        string $statement,
+        array $values = []
+    ) : array
     {
         $sth = $this->perform($statement, $values);
         return $sth->fetchAll(PDO::FETCH_KEY_PAIR);
     }
 
-    public function fetchValue(string $statement, array $values = [], int $column = 0)
-    {
+    public function fetchValue(
+        string $statement,
+        array $values = [],
+        int $column = 0
+    ) {
         $sth = $this->perform($statement, $values);
         return $sth->fetchColumn($column);
     }
 
-    public function yieldAll(string $statement, array $values = []) : Generator
+    public function yieldAll(
+        string $statement,
+        array $values = []
+    ) : Generator
     {
         $sth = $this->perform($statement, $values);
         while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
@@ -163,7 +195,10 @@ class Connection
         }
     }
 
-    public function yieldAssoc(string $statement, array $values = []) : Generator
+    public function yieldAssoc(
+        string $statement,
+        array $values = []
+    ) : Generator
     {
         $sth = $this->perform($statement, $values);
         while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
@@ -172,7 +207,11 @@ class Connection
         }
     }
 
-    public function yieldColumn(string $statement, array $values = [], int $column = 0) : Generator
+    public function yieldColumn(
+        string $statement,
+        array $values = [],
+        int $column = 0
+    ) : Generator
     {
         $sth = $this->perform($statement, $values);
         while ($row = $sth->fetch(PDO::FETCH_NUM)) {
@@ -199,7 +238,10 @@ class Connection
         }
     }
 
-    public function yieldPairs(string $statement, array $values = []) : Generator
+    public function yieldPairs(
+        string $statement,
+        array $values = []
+    ) : Generator
     {
         $sth = $this->perform($statement, $values);
         while ($row = $sth->fetch(PDO::FETCH_NUM)) {

@@ -219,7 +219,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
     public function testFetchPairs()
     {
         $stm = "SELECT id, name FROM pdotest ORDER BY id";
-        $actual = $this->connection->fetchPairs($stm);
+        $actual = $this->connection->fetchKeyPair($stm);
         $this->assertEquals($this->data, $actual);
     }
 

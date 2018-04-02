@@ -134,12 +134,12 @@ The `fetchOne()` method returns the first row as an associative array where the 
 $result = $connection->fetchOne($stm, $bind);
 ```
 
-### fetchPairs()
+### fetchKeyPair()
 
-The `fetchPairs()` method returns an associative array where each key is the first column and each value is the second column
+The `fetchKeyPair()` method returns an associative array where each key is the first column and each value is the second column
 
 ```php
-$result = $connection->fetchPairs($stm, $bind);
+$result = $connection->fetchKeyPair($stm, $bind);
 ```
 
 ### fetchValue()
@@ -199,7 +199,7 @@ foreach ($connection->yieldObjects($stm, $bind, $class, $args) as $object) {
 
 ### yieldPairs()
 
-This is the yielding equivalent of `fetchPairs()`.
+This is the yielding equivalent of `fetchKeyPair()`.
 
 ```php
 foreach ($connection->yieldPairs($stm, $bind) as $key => $val) {

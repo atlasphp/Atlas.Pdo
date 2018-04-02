@@ -1,6 +1,4 @@
 <?php
-declare(strict_types=1);
-
 /**
  *
  * This file is part of Atlas for PHP.
@@ -8,6 +6,8 @@ declare(strict_types=1);
  * @license https://opensource.org/licenses/MIT MIT
  *
  */
+declare(strict_types=1);
+
 namespace Atlas\Pdo;
 
 class ConnectionLocator
@@ -59,12 +59,18 @@ class ConnectionLocator
         $this->factories[static::DEFAULT] = $factory;
     }
 
-    public function setReadFactory(string $name, callable $factory) : void
+    public function setReadFactory(
+        string $name,
+        callable $factory
+    ) : void
     {
         $this->factories[static::READ][$name] = $factory;
     }
 
-    public function setWriteFactory(string $name, callable $factory) : void
+    public function setWriteFactory(
+        string $name,
+        callable $factory
+    ) : void
     {
         $this->factories[static::WRITE][$name] = $factory;
     }
@@ -72,7 +78,8 @@ class ConnectionLocator
     public function getDefault() : Connection
     {
         if ($this->instances[static::DEFAULT] === null) {
-            $this->instances[static::DEFAULT] = ($this->factories[static::DEFAULT])();
+            $instance = ($this->factories[static::DEFAULT])();
+            $this->instances[static::DEFAULT] = $instance;
         }
 
         return $this->instances[static::DEFAULT];
@@ -100,7 +107,7 @@ class ConnectionLocator
         return $this->write;
     }
 
-    protected function getType(string $type)
+    protected function getType(string $type) : Connection
     {
         if (empty($this->factories[$type])) {
             return $this->getDefault();
@@ -113,7 +120,10 @@ class ConnectionLocator
         return $this->get($type, array_rand($this->factories[$type]));
     }
 
-    public function get(string $type, string $name) : Connection
+    public function get(
+        string $type,
+        string $name
+    ) : Connection
     {
         if (! isset($this->factories[$type][$name])) {
             throw Exception::connectionNotFound($type, $name);
