@@ -1,7 +1,6 @@
 # Atlas.Pdo
 
-This package provides a _Connection_ that decorates any [PDO](http://php.net/PDO)
-instance to provide the following:
+This package provides a _Connection_ that decorates any [PDO](http://php.net/PDO) instance to provide the following:
 
 - A `perform()` method acts just like `query()`, but binds values to a prepared statement as part of the call.
 
@@ -11,8 +10,7 @@ instance to provide the following:
 
 - The _Connection_ always sets the PDO connection to `ERRMODE_EXCEPTION` mode for error reporting.
 
-This package also provides a _ConnectionLocator_ to register, instantiate, and
-retain named _Connection_ objects for default, read, and write databases.
+This package also provides a _ConnectionLocator_ to register, instantiate, and retain named _Connection_ objects for default, read (slave), and write (master) databases.
 
 Read the documentation [here](./docs/index.md).
 
