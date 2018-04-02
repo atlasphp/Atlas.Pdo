@@ -93,10 +93,10 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expect, $actual);
     }
 
-    public function testFetchAssoc()
+    public function testFetchUnique()
     {
         $stm = "SELECT * FROM pdotest ORDER BY id";
-        $result = $this->connection->fetchAssoc($stm);
+        $result = $this->connection->fetchUnique($stm);
         $expect = 10;
         $actual = count($result);
         $this->assertEquals($expect, $actual);
@@ -216,18 +216,18 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($expect, $actual);
     }
 
-    public function testFetchPairs()
+    public function testFetchKeyPair()
     {
         $stm = "SELECT id, name FROM pdotest ORDER BY id";
         $actual = $this->connection->fetchKeyPair($stm);
         $this->assertEquals($this->data, $actual);
     }
 
-    public function testYieldPairs()
+    public function testYieldKeyPair()
     {
         $stm = "SELECT id, name FROM pdotest ORDER BY id";
         $actual = [];
-        foreach ($this->connection->yieldPairs($stm) as $key => $value) {
+        foreach ($this->connection->yieldKeyPair($stm) as $key => $value) {
             $actual[$key] = $value;
         }
         $this->assertEquals($this->data, $actual);
@@ -251,12 +251,11 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($this->data, $actual);
     }
 
-    public function testYieldAssoc()
+    public function testYieldUnique()
     {
         $stm = "SELECT * FROM pdotest ORDER BY id";
         $actual = [];
-        foreach ($this->connection->yieldAssoc($stm) as $key => $row) {
-            $this->assertEquals($key, $row['id']);
+        foreach ($this->connection->yieldUnique($stm) as $key => $row) {
             $actual[$key] = $row['name'];
         }
         $this->assertEquals($this->data, $actual);

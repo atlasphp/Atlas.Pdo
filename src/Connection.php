@@ -89,17 +89,13 @@ class Connection
         return $sth->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function fetchAssoc(
+    public function fetchUnique(
         string $statement,
         array $values = []
     ) : array
     {
         $sth  = $this->perform($statement, $values);
-        $data = [];
-        while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
-            $data[current($row)] = $row;
-        }
-        return $data;
+        return $sth->fetchAll(PDO::FETCH_UNIQUE);
     }
 
     public function fetchColumn(
@@ -195,14 +191,14 @@ class Connection
         }
     }
 
-    public function yieldAssoc(
+    public function yieldUnique(
         string $statement,
         array $values = []
     ) : Generator
     {
         $sth = $this->perform($statement, $values);
-        while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
-            $key = current($row);
+        while ($row = $sth->fetch(PDO::FETCH_UNIQUE)) {
+            $key = array_shift($row);
             yield $key => $row;
         }
     }
@@ -238,7 +234,7 @@ class Connection
         }
     }
 
-    public function yieldPairs(
+    public function yieldKeyPair(
         string $statement,
         array $values = []
     ) : Generator
