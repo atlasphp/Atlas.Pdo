@@ -92,17 +92,9 @@ You can choose another column number with an optional third argument (columns ar
 $result = $connection->fetchColumn($stm, $bind, 3);
 ```
 
-### fetchAssoc()
-
-The `fetchAssoc()` method returns an associative array of all rows where the key is the first column, and the row arrays are keyed on the column names
-
-```php
-$result = $connection->fetchAssoc($stm, $bind);
-```
-
 ### fetchGroup()
 
-The `fetchGroup()` method is like fetchAssoc() except that the values aren't wrapped in arrays. Instead, single column values are returned as a single dimensional array and multiple columns are returned as an array of arrays.
+The `fetchGroup()` method is like fetchUnique() except that the values aren't wrapped in arrays. Instead, single column values are returned as a single dimensional array and multiple columns are returned as an array of arrays.
 
 ```php
 $result = $connection->fetchGroup($stm, $bind, $style = PDO::FETCH_COLUMN)
@@ -142,6 +134,14 @@ The `fetchKeyPair()` method returns an associative array where each key is the f
 $result = $connection->fetchKeyPair($stm, $bind);
 ```
 
+### fetchUnique()
+
+The `fetchUnique()` method returns an associative array of all rows where the key is the value of the first column, and the row arrays are keyed on the remaining column names.
+
+```php
+$result = $connection->fetchUnique($stm, $bind);
+```
+
 ### fetchValue()
 
 The `fetchValue()` method returns the value of the first row in the first column.
@@ -160,16 +160,6 @@ This is the yielding equivalent of `fetchAll()`.
 
 ```php
 foreach ($connection->yieldAll($stm, $bind) as $row) {
-    // ...
-}
-```
-
-### yieldAssoc()
-
-This is the yielding equivalent of `fetchAssoc()`.
-
-```php
-foreach ($connection->yieldAssoc($stm, $bind) as $key => $row) {
     // ...
 }
 ```
@@ -203,6 +193,16 @@ This is the yielding equivalent of `fetchKeyPair()`.
 
 ```php
 foreach ($connection->yieldPairs($stm, $bind) as $key => $val) {
+    // ...
+}
+```
+
+### yieldUnique()
+
+This is the yielding equivalent of `fetchUnique()`.
+
+```php
+foreach ($connection->yieldUnique($stm, $bind) as $key => $row) {
     // ...
 }
 ```
