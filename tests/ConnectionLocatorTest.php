@@ -145,4 +145,20 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
         $this->expectException(Exception::CLASS);
         $locator->get($locator::WRITE, 'no-such-connection');
     }
+
+    public function testLockToWrite()
+    {
+        $locator = $this->newLocator($this->read, $this->write);
+
+        $this->assertFalse($locator->isLockedToWrite());
+
+        $read = $locator->getRead();
+        $write = $locator->getWrite();
+        $this->assertNotSame($read, $write);
+
+        $locator->lockToWrite();
+        $this->assertTrue($locator->isLockedToWrite());
+        $read = $locator->getRead();
+        $this->assertSame($read, $write);
+    }
 }

@@ -2,6 +2,7 @@
 namespace Atlas\Pdo;
 
 use PDO;
+use PDOStatement;
 use stdClass;
 
 class ConnectionTest extends \PHPUnit\Framework\TestCase
@@ -62,6 +63,12 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
     public function testGetPdo()
     {
         $this->assertSame($this->pdo, $this->connection->getPdo());
+    }
+
+    public function testPerform()
+    {
+        $stm = $this->connection->perform("SELECT * FROM pdotest WHERE id = ?", [1]);
+        $this->assertInstanceOf(PDOStatement::CLASS, $stm);
     }
 
     public function testFetchAffected()
