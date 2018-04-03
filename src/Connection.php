@@ -20,6 +20,10 @@ class Connection
 
     public static function new(...$args) : Connection
     {
+        if ($args[0] instanceof PDO) {
+            return new static($args[0]);
+        }
+
         return new static(new PDO(...$args));
     }
 

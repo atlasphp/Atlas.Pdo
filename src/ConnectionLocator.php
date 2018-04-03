@@ -36,6 +36,24 @@ class ConnectionLocator
 
     protected $lockToWrite = false;
 
+    public static function new(...$args)
+    {
+        if ($args[0] instanceof Connection) {
+            return new static(function () use ($args) {
+                return $args[0];
+            });
+        }
+
+        return new static(Connection::factory(...$args));
+    }
+
+    public static function factory(...$args)
+    {
+        return function () use ($args) {
+            return static::new(...$args);
+        };
+    }
+
     public function __construct(
         callable $default = null,
         array $read = [],

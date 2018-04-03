@@ -1,6 +1,8 @@
 <?php
 namespace Atlas\Pdo;
 
+use PDO;
+
 class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
 {
     /**
@@ -45,6 +47,30 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
     protected function newLocator($read = [], $write = [])
     {
         return new ConnectionLocator($this->default, $read, $write);
+    }
+
+    public function testNewWithConnection()
+    {
+        $connection = Connection::new('sqlite::memory:');
+        $actual = ConnectionLocator::new($connection);
+        $this->assertInstanceOf(ConnectionLocator::CLASS, $actual);
+        $this->assertSame($connection, $actual->getDefault());
+    }
+
+    public function testNewWithPdo()
+    {
+        $pdo = new Pdo('sqlite::memory:');
+        $actual = ConnectionLocator::new($pdo);
+        $this->assertInstanceOf(ConnectionLocator::CLASS, $actual);
+        $this->assertSame($pdo, $actual->getDefault()->getPdo());
+    }
+
+    public function testFactory()
+    {
+        $factory = ConnectionLocator::factory('sqlite::memory:');
+        $actual = $factory();
+        $this->assertInstanceOf(ConnectionLocator::CLASS, $actual);
+        $this->assertInstanceOf(PDO::CLASS, $actual->getDefault()->getPdo());
     }
 
     public function testGetDefault()
