@@ -65,6 +65,12 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($this->pdo, $this->connection->getPdo());
     }
 
+    public function testGetLastInsertId()
+    {
+        $actual = $this->connection->getLastInsertId();
+        $this->assertEquals(10, $actual);
+    }
+
     public function testPerform()
     {
         $stm = $this->connection->perform("SELECT * FROM pdotest WHERE id = ?", [1]);

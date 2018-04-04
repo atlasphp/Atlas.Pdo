@@ -57,6 +57,11 @@ class Connection
         return $this->pdo;
     }
 
+    public function getLastInsertId(string $name = null) : string
+    {
+        return $this->pdo->lastInsertId($name);
+    }
+
     public function perform(
         string $statement,
         array $values = []
