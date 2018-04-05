@@ -65,14 +65,6 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($pdo, $actual->getDefault()->getPdo());
     }
 
-    public function testFactory()
-    {
-        $factory = ConnectionLocator::factory('sqlite::memory:');
-        $actual = $factory();
-        $this->assertInstanceOf(ConnectionLocator::CLASS, $actual);
-        $this->assertInstanceOf(PDO::CLASS, $actual->getDefault()->getPdo());
-    }
-
     public function testGetDefault()
     {
         $locator = $this->newLocator();

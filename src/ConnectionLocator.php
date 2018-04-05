@@ -47,13 +47,6 @@ class ConnectionLocator
         return new static(Connection::factory(...$args));
     }
 
-    public static function factory(...$args)
-    {
-        return function () use ($args) {
-            return static::new(...$args);
-        };
-    }
-
     public function __construct(
         callable $default = null,
         array $read = [],
