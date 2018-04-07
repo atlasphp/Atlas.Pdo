@@ -1,22 +1,21 @@
-# Getting Started
+# Connection
 
 ## Instantiation
 
-Instantiate a _Connection_ with an existing PDO instance:
+The easiest way to create a _Connection_ is to use its static  `new()` method, either with _PDO_ connection arguments, or with an actual _PDO_ instance:
 
 ```php
 use Atlas\Pdo\Connection;
 
-$pdo = new PDO('sqlite::memory:');
-$connection = new Connection($pdo);
-```
+// pass PDO constructor arguments ...
+$connection = Connection::new(
+    'mysql:host=localhost;dbname=testdb',
+    'username',
+    'password'
+);
 
-Alternatively, use the `Connection::new()` method to create the _Connection_ PDO instance for you:
-
-```php
-use Atlas\Pdo\Connection;
-
-$connection = Connection::new('sqlite::memory:');
+// ... or a PDO instance.
+$connection = Connection::new($pdo);
 ```
 
 If you need a callable factory to create a _Connection_ and its PDO instance at a later time, such as in a service container, you can use the `Connection::factory()` method:
@@ -102,6 +101,14 @@ $result = $connection->fetchGroup($stm, $bind, $style = PDO::FETCH_COLUMN)
 
 Set `$style` to `PDO::FETCH_NAMED` when values are an array (i.e. there are more than two columns in the select).
 
+### fetchKeyPair()
+
+The `fetchKeyPair()` method returns an associative array where each key is the first column and each value is the second column
+
+```php
+$result = $connection->fetchKeyPair($stm, $bind);
+```
+
 ### fetchObject()
 
 The `fetchObject()` method returns the first row as an object of your choosing; the columns are mapped to object properties. an optional 4th parameter array provides constructor arguments when instantiating the object.
@@ -124,14 +131,6 @@ The `fetchOne()` method returns the first row as an associative array where the 
 
 ```php
 $result = $connection->fetchOne($stm, $bind);
-```
-
-### fetchKeyPair()
-
-The `fetchKeyPair()` method returns an associative array where each key is the first column and each value is the second column
-
-```php
-$result = $connection->fetchKeyPair($stm, $bind);
 ```
 
 ### fetchUnique()
@@ -175,6 +174,16 @@ foreach ($connection->yieldColumn($stm, $bind) as $val) {
 }
 ```
 
+### yieldKeyPair()
+
+This is the yielding equivalent of `fetchKeyPair()`.
+
+```php
+foreach ($connection->yieldPairs($stm, $bind) as $key => $val) {
+    // ...
+}
+```
+
 ### yieldObjects()
 
 This is the yielding equivalent of `fetchObjects()`.
@@ -183,16 +192,6 @@ This is the yielding equivalent of `fetchObjects()`.
 $class = 'ClassName';
 $args = ['arg0', 'arg1', 'arg2'];
 foreach ($connection->yieldObjects($stm, $bind, $class, $args) as $object) {
-    // ...
-}
-```
-
-### yieldPairs()
-
-This is the yielding equivalent of `fetchKeyPair()`.
-
-```php
-foreach ($connection->yieldPairs($stm, $bind) as $key => $val) {
     // ...
 }
 ```
