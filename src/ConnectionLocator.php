@@ -39,12 +39,12 @@ class ConnectionLocator
     public static function new(...$args)
     {
         if ($args[0] instanceof Connection) {
-            return new static(function () use ($args) {
+            return new ConnectionLocator(function () use ($args) {
                 return $args[0];
             });
         }
 
-        return new static(Connection::factory(...$args));
+        return new ConnectionLocator(Connection::factory(...$args));
     }
 
     public function __construct(

@@ -21,16 +21,16 @@ class Connection
     public static function new(...$args) : Connection
     {
         if ($args[0] instanceof PDO) {
-            return new static($args[0]);
+            return new Connection($args[0]);
         }
 
-        return new static(new PDO(...$args));
+        return new Connection(new PDO(...$args));
     }
 
     public static function factory(...$args) : callable
     {
         return function () use ($args) {
-            return static::new(...$args);
+            return Connection::new(...$args);
         };
     }
 
