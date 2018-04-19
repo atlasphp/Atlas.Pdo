@@ -14,6 +14,23 @@ use Generator;
 use PDO;
 use PDOStatement;
 
+/**
+ * Decorator for PDO instances.
+ *
+ * @method bool beginTransaction()
+ * @method bool commit()
+ * @method mixed errorCode()
+ * @method array errorInfo()
+ * @method int exec(string $statement)
+ * @method mixed getAttribute($attribute)
+ * @method bool inTransaction()
+ * @method string lastInsertId(string $name = null)
+ * @method PDOStatement prepare(string $statement, array $options = null)
+ * @method PDOStatement query(string $statement, ...$fetch)
+ * @method string quote($value, int $parameter_type = PDO::PARAM_STR)
+ * @method bool rollBack()
+ * @method mixed setAttribute($attribute, $value)
+ */
 class Connection
 {
     protected $pdo;
