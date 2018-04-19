@@ -1,6 +1,6 @@
 # Connection Locator
 
-Some applications may multiple database servers; for example, one for writes, and one or more for reads. The _ConnectionLocator_ allows you to define multiple _Connection_ objects for lazy-loaded read and write connections. It will create the connections only when they are when called. The _Connection_ creation logic should be wrapped in factory callable.
+Some applications may use multiple database servers; for example, one for writes, and one or more for reads. The _ConnectionLocator_ allows you to define multiple _Connection_ objects for lazy-loaded read and write connections. It will create the connections only when they are when called. The _Connection_ creation logic should be wrapped in factory callable.
 
 ## Instantiation
 
