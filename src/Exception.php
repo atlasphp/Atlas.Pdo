@@ -10,13 +10,6 @@ declare(strict_types=1);
 
 namespace Atlas\Pdo;
 
-/**
- *
- * Base Exception class for Aura Sql
- *
- * @package atlas/pdo
- *
- */
 class Exception extends \Exception
 {
     public static function connectionNotFound($type, $name)

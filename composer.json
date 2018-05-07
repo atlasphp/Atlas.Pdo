@@ -1,10 +1,12 @@
 {
     "name": "atlas/pdo",
     "type": "library",
-    "description": "An extension for Atlas PDO connections.",
+    "description": "Provides a PDO instance decorator with convenience methods, and a connection manager.",
     "keywords": [
         "pdo",
-        "sql"
+        "sql",
+        "database",
+        "connection"
     ],
     "homepage": "https://github.com/atlasphp/Atlas.Pdo",
     "license": "MIT",
