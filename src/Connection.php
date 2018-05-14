@@ -35,19 +35,19 @@ class Connection
 {
     protected $pdo;
 
-    public static function new(...$args) : Connection
+    public static function new(...$ctorArgs) : Connection
     {
-        if ($args[0] instanceof PDO) {
-            return new Connection($args[0]);
+        if ($ctorArgs[0] instanceof PDO) {
+            return new Connection($ctorArgs[0]);
         }
 
-        return new Connection(new PDO(...$args));
+        return new Connection(new PDO(...$ctorArgs));
     }
 
-    public static function factory(...$args) : callable
+    public static function factory(...$ctorArgs) : callable
     {
-        return function () use ($args) {
-            return Connection::new(...$args);
+        return function () use ($ctorArgs) {
+            return Connection::new(...$ctorArgs);
         };
     }
 
@@ -80,13 +80,13 @@ class Connection
     ) : PDOStatement
     {
         $sth = $this->prepare($statement);
-        foreach ($values as $name => $args) {
+        foreach ($values as $name => $ctorArgs) {
             if (is_int($name)) {
                 // sequential placeholders are 1-based
                 $name ++;
             }
-            settype($args, 'array');
-            $sth->bindValue($name, ...$args);
+            settype($ctorArgs, 'array');
+            $sth->bindValue($name, ...$ctorArgs);
         }
         $sth->execute();
         return $sth;
@@ -143,12 +143,12 @@ class Connection
         string $statement,
         array $values = [],
         string $class = 'stdClass',
-        array $args = []
+        array $ctorArgs = []
     ) {
         $sth = $this->perform($statement, $values);
 
-        if (! empty($args)) {
-            return $sth->fetchObject($class, $args);
+        if (! empty($ctorArgs)) {
+            return $sth->fetchObject($class, $ctorArgs);
         }
 
         return $sth->fetchObject($class);
@@ -158,13 +158,13 @@ class Connection
         string $statement,
         array $values = [],
         string $class = 'stdClass',
-        array $args = []
+        array $ctorArgs = []
     ) : array
     {
         $sth = $this->perform($statement, $values);
 
-        if (! empty($args)) {
-            return $sth->fetchAll(PDO::FETCH_CLASS, $class, $args);
+        if (! empty($ctorArgs)) {
+            return $sth->fetchAll(PDO::FETCH_CLASS, $class, $ctorArgs);
         }
 
         return $sth->fetchAll(PDO::FETCH_CLASS, $class);
@@ -240,16 +240,16 @@ class Connection
         string $statement,
         array $values = [],
         string $class = 'stdClass',
-        array $args = []
+        array $ctorArgs = []
     ) : Generator {
         $sth = $this->perform($statement, $values);
 
-        if (empty($args)) {
+        if (empty($ctorArgs)) {
             while ($instance = $sth->fetchObject($class)) {
                 yield $instance;
             }
         } else {
-            while ($instance = $sth->fetchObject($class, $args)) {
+            while ($instance = $sth->fetchObject($class, $ctorArgs)) {
                 yield $instance;
             }
         }
