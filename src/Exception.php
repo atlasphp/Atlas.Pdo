@@ -12,8 +12,10 @@ namespace Atlas\Pdo;
 
 class Exception extends \Exception
 {
-    public static function connectionNotFound($type, $name)
-    {
-        return new Exception("{$type}:{$name}");
+    public static function connectionNotFound(
+        string $type,
+        string $name
+    ) : Exception {
+        return new Exception("Connection not found: {$type}:{$name}");
     }
 }

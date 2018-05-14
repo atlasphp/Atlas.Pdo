@@ -48,19 +48,19 @@ class ConnectionLocator
     }
 
     public function __construct(
-        callable $default = null,
-        array $read = [],
-        array $write = []
+        callable $defaultFactory = null,
+        array $readFactories = [],
+        array $writeFactories = []
     ) {
-        if ($default) {
-            $this->setDefaultFactory($default);
+        if ($defaultFactory) {
+            $this->setDefaultFactory($defaultFactory);
         }
 
-        foreach ($read as $name => $factory) {
+        foreach ($readFactories as $name => $factory) {
             $this->setReadFactory($name, $factory);
         }
 
-        foreach ($write as $name => $factory) {
+        foreach ($writeFactories as $name => $factory) {
             $this->setWriteFactory($name, $factory);
         }
     }
