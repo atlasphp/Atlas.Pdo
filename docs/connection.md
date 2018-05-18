@@ -48,7 +48,7 @@ use PDO;
 $pdo = new PDO('sqlite::memory:');
 
 $stm  = 'SELECT * FROM test WHERE foo = :foo AND bar = :bar';
-$bind = array('foo' => 'baz', 'bar' => 'dib');
+$bind = ['foo' => 'baz', 'bar' => 'dib'];
 $sth = $pdo->prepare($stm);
 $sth->execute($bind);
 $result = $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -62,7 +62,7 @@ use Atlas\Pdo\Connection;
 $connection = Connection::new('sqlite::memory:');
 
 $stm  = 'SELECT * FROM test WHERE foo = :foo AND bar = :bar';
-$bind = array('foo' => 'baz', 'bar' => 'dib');
+$bind = ['foo' => 'baz', 'bar' => 'dib'];
 
 $result = $connection->fetchAll($stm, $bind);
 ```
