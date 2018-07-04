@@ -1,4 +1,18 @@
-# Connection
+# PDO Connection
+
+## Installation
+
+This package is installable and autoloadable via [Composer](https://getcomposer.org/)
+as [atlas/pdo](https://packagist.org/packages/atlas/pdo). Add the following lines
+to your `composer.json` file, then call `composer update`.
+
+```json
+{
+    "require": {
+        "atlas/pdo": "~1.0"
+    }
+}
+```
 
 ## Instantiation
 
