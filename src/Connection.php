@@ -80,6 +80,16 @@ class Connection
     ) : PDOStatement
     {
         $sth = $this->prepare($statement);
+        $this->bindValues($sth, $values);
+        $sth->execute();
+        return $sth;
+    }
+
+    protected function bindValues(
+        PDOStatement $sth,
+        array $values
+    ) : void
+    {
         foreach ($values as $name => $args) {
             if (is_int($name)) {
                 // sequential placeholders are 1-based
@@ -94,8 +104,6 @@ class Connection
 
             $sth->bindValue($name, ...$args);
         }
-        $sth->execute();
-        return $sth;
     }
 
     public function fetchAffected(
