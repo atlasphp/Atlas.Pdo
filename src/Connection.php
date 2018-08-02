@@ -35,19 +35,19 @@ class Connection
 {
     protected $pdo;
 
-    public static function new(...$ctorArgs) : Connection
+    public static function new(...$args) : Connection
     {
-        if ($ctorArgs[0] instanceof PDO) {
-            return new Connection($ctorArgs[0]);
+        if ($args[0] instanceof PDO) {
+            return new static($args[0]);
         }
 
-        return new Connection(new PDO(...$ctorArgs));
+        return new static(new PDO(...$args));
     }
 
-    public static function factory(...$ctorArgs) : callable
+    public static function factory(...$args) : callable
     {
-        return function () use ($ctorArgs) {
-            return Connection::new(...$ctorArgs);
+        return function () use ($args) {
+            return static::new(...$args);
         };
     }
 
