@@ -99,7 +99,7 @@ class Connection
         // yes, PDO seems to wants a string "0" or "1".
         $type = $args[1] ?? PDO::PARAM_STR;
         if ($type === PDO::PARAM_BOOL && is_bool($args[0])) {
-            $args[0] = (string) (int) $args[0];
+            $args[0] = $args[0] ? '1' : '0';
         }
 
         $sth->bindValue($name, ...$args);
