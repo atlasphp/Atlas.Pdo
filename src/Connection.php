@@ -81,28 +81,21 @@ class Connection
     {
         $sth = $this->prepare($statement);
         foreach ($values as $name => $args) {
-            $this->bind($sth, $name, (array) $args);
+            if (is_int($name)) {
+                // sequential placeholders are 1-based
+                $name ++;
+            }
+
+            settype($args, 'array');
+            $type = $args[1] ?? PDO::PARAM_STR;
+            if ($type === PDO::PARAM_BOOL && is_bool($args[0])) {
+                $args[0] = $args[0] ? '1' : '0';
+            }
+
+            $sth->bindValue($name, ...$args);
         }
         $sth->execute();
         return $sth;
-    }
-
-    protected function bind(PDOStatement $sth, $name, array $args) : void
-    {
-        if (is_int($name)) {
-            // sequential placeholders are 1-based
-            $name ++;
-        }
-
-        // PDO does not always deal well with boolean values.
-        // cast to their string integer equivalents instead.
-        // yes, PDO seems to wants a string "0" or "1".
-        $type = $args[1] ?? PDO::PARAM_STR;
-        if ($type === PDO::PARAM_BOOL && is_bool($args[0])) {
-            $args[0] = $args[0] ? '1' : '0';
-        }
-
-        $sth->bindValue($name, ...$args);
     }
 
     public function fetchAffected(
