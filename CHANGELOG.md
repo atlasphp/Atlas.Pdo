@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 1.0.1
+
+- The `Connection::new()` and `factory()` methods now instantiate via the `static` keyword instead of the class name, making the Connection class more amenable to extension.
+
+- The `Connection::perform()` method now binds `PDO::PARAM_BOOL` values as string '0' and string '1'; this addresses a not-a-bug-but-still-surprising behavior in PDO; cf. <https://bugs.php.net/bug.php?id=49255>.
+
+- Updated docs.
+
 ## 1.0.0
 
 First stable release.
