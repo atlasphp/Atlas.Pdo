@@ -76,6 +76,8 @@ class Connection
         return $this->pdo;
     }
 
+    /* Transactions */
+
     public function beginTransaction() : bool
     {
         $entry = $this->newLogEntry(__METHOD__);
@@ -92,6 +94,16 @@ class Connection
         return $result;
     }
 
+    public function rollBack() : bool
+    {
+        $entry = $this->newLogEntry(__METHOD__);
+        $result = $this->pdo->rollBack();
+        $this->addLogEntry($entry);
+        return $result;
+    }
+
+    /* Queries */
+
     public function exec(string $statement) : int
     {
         $entry = $this->newLogEntry($statement);
@@ -107,10 +119,43 @@ class Connection
     {
         $entry = $this->newLogEntry($statement);
         $sth = $this->prepare($statement);
-        $entry['values'] = $this->bindValues($sth, $values);
+        $entry['values'] = $this->performBindValues($sth, $values);
         $sth->execute();
         $this->addLogEntry($entry);
         return $sth;
+    }
+
+    protected function performBindValues(
+        PDOStatement $sth,
+        array $values
+    ) : array
+    {
+        $bound = [];
+        foreach ($values as $name => $args) {
+            $bound[$name] = $this->performBindValue($sth, $name, $args);
+        }
+        return $bound;
+    }
+
+    protected function performBindValue(PDOStatement $sth, $name, $args)
+    {
+        if (is_int($name)) {
+            // sequential placeholders are 1-based
+            $name ++;
+        }
+
+        if (! is_array($args)) {
+            $sth->bindValue($name, $args);
+            return $args;
+        }
+
+        $type = $args[1] ?? PDO::PARAM_STR;
+        if ($type === PDO::PARAM_BOOL && is_bool($args[0])) {
+            $args[0] = $args[0] ? '1' : '0';
+        }
+
+        $sth->bindValue($name, ...$args);
+        return $args[0];
     }
 
     public function query(string $statement, ...$fetch) : PDOStatement
@@ -121,37 +166,7 @@ class Connection
         return $sth;
     }
 
-    public function rollBack() : bool
-    {
-        $entry = $this->newLogEntry(__METHOD__);
-        $result = $this->pdo->rollBack();
-        $this->addLogEntry($entry);
-        return $result;
-    }
-
-    protected function bindValues(
-        PDOStatement $sth,
-        array $values
-    ) : array
-    {
-        $bound = [];
-        foreach ($values as $name => $args) {
-            if (is_int($name)) {
-                // sequential placeholders are 1-based
-                $name ++;
-            }
-
-            settype($args, 'array');
-            $type = $args[1] ?? PDO::PARAM_STR;
-            if ($type === PDO::PARAM_BOOL && is_bool($args[0])) {
-                $args[0] = $args[0] ? '1' : '0';
-            }
-
-            $sth->bindValue($name, ...$args);
-            $bound[$name] = $args[0];
-        }
-        return $bound;
-    }
+    /* Fetching */
 
     public function fetchAffected(
         string $statement,
@@ -262,6 +277,8 @@ class Connection
         return $sth->fetchColumn($column);
     }
 
+    /* Yielding */
+
     public function yieldAll(
         string $statement,
         array $values = []
@@ -327,6 +344,8 @@ class Connection
             yield $row[0] => $row[1];
         }
     }
+
+    /* Logging */
 
     public function logQueries(bool $logQueries = true) : void
     {
