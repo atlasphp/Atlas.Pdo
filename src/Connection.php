@@ -119,25 +119,15 @@ class Connection
     {
         $entry = $this->newLogEntry($statement);
         $sth = $this->prepare($statement);
-        $entry['values'] = $this->performBindValues($sth, $values);
+        foreach ($values as $name => $args) {
+            $entry['values'][$name] = $this->performBind($sth, $name, $args);
+        }
         $sth->execute();
         $this->addLogEntry($entry);
         return $sth;
     }
 
-    protected function performBindValues(
-        PDOStatement $sth,
-        array $values
-    ) : array
-    {
-        $bound = [];
-        foreach ($values as $name => $args) {
-            $bound[$name] = $this->performBindValue($sth, $name, $args);
-        }
-        return $bound;
-    }
-
-    protected function performBindValue(PDOStatement $sth, $name, $args)
+    protected function performBind(PDOStatement $sth, $name, $args)
     {
         if (is_int($name)) {
             // sequential placeholders are 1-based
