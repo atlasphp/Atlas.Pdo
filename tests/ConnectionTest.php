@@ -310,4 +310,48 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         }
         $this->assertEquals($expect, $actual);
     }
+
+    public function testQuery()
+    {
+        $stm = "SELECT id, name FROM pdotest WHERE id = 1";
+        $sth = $this->connection->query($stm);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
+    }
+
+    public function testQueryLogging()
+    {
+        // query logging turned off
+        $stm = "SELECT id, name FROM pdotest WHERE id = :id";
+        $sth = $this->connection->perform($stm, ['id' => [false, PDO::PARAM_BOOL]]);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
+        $this->assertSame([], $this->connection->getQueries());
+
+        // query logging turned on
+        $this->connection->logQueries(true);
+        $sth = $this->connection->perform($stm, ['id' => [false, PDO::PARAM_BOOL]]);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
+
+        $queries = $this->connection->getQueries();
+        $this->assertCount(1, $queries);
+
+        $query = $queries[0];
+        $this->assertTrue($query['start'] > 0);
+        $this->assertTrue($query['finish'] > $query['start']);
+        $this->assertTrue($query['duration'] > 0);
+        $this->assertTrue($query['statement'] == 'SELECT id, name FROM pdotest WHERE id = :id');
+        $this->assertTrue($query['values']['id'] === '0');
+        $this->assertTrue($query['trace'] != '');
+
+        // transaction entries
+        $this->connection->beginTransaction();
+        $this->connection->commit();
+        $this->connection->beginTransaction();
+        $this->connection->rollBack();
+        $queries = $this->connection->getQueries();
+        $this->assertCount(5, $queries); // including the earlier one
+        $this->assertSame('Atlas\\Pdo\\Connection::beginTransaction', $queries[1]['statement']);
+        $this->assertSame('Atlas\\Pdo\\Connection::commit', $queries[2]['statement']);
+        $this->assertSame('Atlas\\Pdo\\Connection::beginTransaction', $queries[3]['statement']);
+        $this->assertSame('Atlas\\Pdo\\Connection::rollBack', $queries[4]['statement']);
+    }
 }

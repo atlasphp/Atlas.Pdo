@@ -2,6 +2,7 @@
 namespace Atlas\Pdo;
 
 use PDO;
+use PDOStatement;
 
 class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
 {
@@ -178,5 +179,79 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($locator->isLockedToWrite());
         $read = $locator->getRead();
         $this->assertSame($read, $write);
+    }
+
+    public function testQueryLogging()
+    {
+        $locator = $this->newLocator($this->read, $this->write);
+        $stm = "SELECT * FROM sqlite_master";
+
+        // query logging turned off
+        $connection = $locator->getDefault();
+        $sth = $connection->perform($stm);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
+        $this->assertSame([], $locator->getQueries());
+
+        // query logging turned on
+        $locator->logQueries(true);
+
+        // default connection
+        $sth = $connection->perform($stm);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
+
+        // read and write connections
+        $types = ['read', 'write'];
+        foreach ($types as $type) {
+            for ($i = 1; $i <= 3; $i ++) {
+                $name = $type . $i;
+                $connection = $locator->get(strtoupper($type), $name);
+                $sth = $connection->perform($stm);
+                $this->assertInstanceOf(PDOStatement::class, $sth);
+            }
+        }
+
+        $queries = $locator->getQueries();
+        $this->assertCount(7, $queries);
+
+        $labels = [];
+        foreach ($queries as $query) {
+            $labels[] = $query['connection'];
+            $this->assertTrue($query['start'] > 0);
+            $this->assertTrue($query['finish'] > $query['start']);
+            $this->assertTrue($query['duration'] > 0);
+            $this->assertTrue($query['statement'] == 'SELECT * FROM sqlite_master');
+            $this->assertTrue($query['values'] === []);
+            $this->assertTrue($query['trace'] != '');
+        }
+
+        $expect = [
+            'DEFAULT',
+            'READ:read1',
+            'READ:read2',
+            'READ:read3',
+            'WRITE:write1',
+            'WRITE:write2',
+            'WRITE:write3',
+        ];
+        $this->assertSame($expect, $labels);
+    }
+
+    public function testSetQueryLogger()
+    {
+        $entries = [];
+        $queryLogger = function (array $entry) use (&$entries) : void {
+            $entries[] = $entry;
+        };
+
+        $locator = $this->newLocator();
+        $locator->setQueryLogger($queryLogger);
+        $locator->logQueries(true);
+
+        $connection = $locator->getDefault();
+        $sth = $connection->perform('SELECT * FROM sqlite_master');
+        $this->assertInstanceOf(PDOStatement::class, $sth);
+
+        $this->assertCount(1, $entries);
+        $this->assertSame('SELECT * FROM sqlite_master', $entries[0]['statement']);
     }
 }

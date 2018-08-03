@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace Atlas\Pdo;
 
+use Exception;
 use Generator;
 use PDO;
 use PDOStatement;
@@ -17,23 +18,24 @@ use PDOStatement;
 /**
  * Decorator for PDO instances.
  *
- * @method bool beginTransaction()
- * @method bool commit()
  * @method mixed errorCode()
  * @method array errorInfo()
- * @method int exec(string $statement)
  * @method mixed getAttribute($attribute)
  * @method bool inTransaction()
  * @method string lastInsertId(string $name = null)
  * @method PDOStatement prepare(string $statement, array $options = null)
- * @method PDOStatement query(string $statement, ...$fetch)
  * @method string quote($value, int $parameter_type = PDO::PARAM_STR)
- * @method bool rollBack()
  * @method mixed setAttribute($attribute, $value)
  */
 class Connection
 {
     protected $pdo;
+
+    protected $logQueries = false;
+
+    protected $queries = [];
+
+    protected $queryLogger;
 
     public static function new(...$args) : Connection
     {
@@ -74,22 +76,65 @@ class Connection
         return $this->pdo;
     }
 
+    public function beginTransaction() : bool
+    {
+        $entry = $this->newLogEntry(__METHOD__);
+        $result = $this->pdo->beginTransaction();
+        $this->addLogEntry($entry);
+        return $result;
+    }
+
+    public function commit() : bool
+    {
+        $entry = $this->newLogEntry(__METHOD__);
+        $result = $this->pdo->commit();
+        $this->addLogEntry($entry);
+        return $result;
+    }
+
+    public function exec(string $statement) : int
+    {
+        $entry = $this->newLogEntry($statement);
+        $rowCount = $this->pdo->exec($statement);
+        $this->addLogEntry($entry);
+        return $rowCount;
+    }
+
     public function perform(
         string $statement,
         array $values = []
     ) : PDOStatement
     {
+        $entry = $this->newLogEntry($statement);
         $sth = $this->prepare($statement);
-        $this->bindValues($sth, $values);
+        $entry['values'] = $this->bindValues($sth, $values);
         $sth->execute();
+        $this->addLogEntry($entry);
         return $sth;
+    }
+
+    public function query(string $statement, ...$fetch) : PDOStatement
+    {
+        $entry = $this->newLogEntry($statement);
+        $sth = $this->pdo->query($statement, ...$fetch);
+        $this->addLogEntry($entry);
+        return $sth;
+    }
+
+    public function rollBack() : bool
+    {
+        $entry = $this->newLogEntry(__METHOD__);
+        $result = $this->pdo->rollBack();
+        $this->addLogEntry($entry);
+        return $result;
     }
 
     protected function bindValues(
         PDOStatement $sth,
         array $values
-    ) : void
+    ) : array
     {
+        $bound = [];
         foreach ($values as $name => $args) {
             if (is_int($name)) {
                 // sequential placeholders are 1-based
@@ -103,7 +148,9 @@ class Connection
             }
 
             $sth->bindValue($name, ...$args);
+            $bound[$name] = $args[0];
         }
+        return $bound;
     }
 
     public function fetchAffected(
@@ -255,7 +302,8 @@ class Connection
         array $values = [],
         string $class = 'stdClass',
         array $ctorArgs = []
-    ) : Generator {
+    ) : Generator
+    {
         $sth = $this->perform($statement, $values);
 
         if (empty($ctorArgs)) {
@@ -277,6 +325,50 @@ class Connection
         $sth = $this->perform($statement, $values);
         while ($row = $sth->fetch(PDO::FETCH_NUM)) {
             yield $row[0] => $row[1];
+        }
+    }
+
+    public function logQueries(bool $logQueries = true) : void
+    {
+        $this->logQueries = $logQueries;
+    }
+
+    public function getQueries()
+    {
+        return $this->queries;
+    }
+
+    public function setQueryLogger(callable $queryLogger) : void
+    {
+        $this->queryLogger = $queryLogger;
+    }
+
+    protected function newLogEntry(string $statement) : array
+    {
+        return [
+            'start' => microtime(true),
+            'finish' => null,
+            'duration' => null,
+            'statement' => $statement,
+            'values' => null,
+            'trace' => null,
+        ];
+    }
+
+    protected function addLogEntry(array $entry) : void
+    {
+        if (! $this->logQueries) {
+            return;
+        }
+
+        $entry['finish'] = microtime(true);
+        $entry['duration'] = $entry['finish'] - $entry['start'];
+        $entry['trace'] = (new Exception())->getTraceAsString();
+
+        if ($this->queryLogger !== null) {
+            ($this->queryLogger)($entry);
+        } else {
+            $this->queries[] = $entry;
         }
     }
 }

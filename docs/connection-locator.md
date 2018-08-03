@@ -145,3 +145,59 @@ $write = [
 // configure locator at construction time
 $connectionLocator = new ConnectionLocator($default, $read, $write);
 ```
+
+## Query Logging
+
+As with an individual _Connection_, it is sometimes useful to log all
+queries on all connections in the _ConnectionLocator_. To do so, call its
+`logQueries()` method, issue your queries, and then call `getQueries()` to
+get back the log entries.
+
+```php
+// start logging
+$connectionLocator->logQueries(true);
+
+// retrieve connections and issue queries, then:
+$queries = $connectionLocator->getQueries();
+
+// stop logging
+$connectionLocator->logQueries(false);
+```
+
+Each query log entry will have one added key, `connection`, indicating which
+connection performed the query. The `connection` label will be `DEFAULT` for the
+default connection, `READ:` and the read connection name, or `WRITE:` and the
+write connection name.
+
+> **Note:**
+>
+> Calling `logQueries()` will turn logging on and off for all instances in the
+> locator, even if those instances are not "in hand" at the moment. That is,
+> you do not have to re-get the instance; logging for each connection will be
+> turned on and off "at a distance."
+
+You may wish to set a custom logger on the _ConnectionLocator_. To do so, call
+`setQueryLogger()` and pass a callable with the signature
+`function (array $entry) : void`.
+
+```php
+class CustomDebugger
+{
+    public function __invoke(array $entry) : void
+    {
+        // call an injected logger to record the entry
+    }
+}
+
+$customDebugger = new CustomDebugger();
+$connectionLocator->setQueryLogger($customDebugger);
+$connectionLocator->logQueries(true);
+
+// now the Connection will send query log entries to the CustomDebugger
+```
+
+> **Note:**
+>
+> If you set a custom logger, the _Connection_ will no longer retain its own
+> query log entries; they will all go to the custom logger. This means that
+> `getQueries()` on the _Connection_ not show any new entries.

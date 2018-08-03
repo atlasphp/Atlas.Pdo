@@ -36,6 +36,12 @@ class ConnectionLocator
 
     protected $lockToWrite = false;
 
+    protected $logQueries = false;
+
+    protected $queries = [];
+
+    protected $queryLogger;
+
     public static function new(...$args)
     {
         if ($args[0] instanceof Connection) {
@@ -89,8 +95,10 @@ class ConnectionLocator
     public function getDefault() : Connection
     {
         if ($this->instances[static::DEFAULT] === null) {
-            $instance = ($this->factories[static::DEFAULT])();
-            $this->instances[static::DEFAULT] = $instance;
+            $this->instances[static::DEFAULT] = $this->newConnection(
+                $this->factories[static::DEFAULT],
+                static::DEFAULT
+            );
         }
 
         return $this->instances[static::DEFAULT];
@@ -141,10 +149,28 @@ class ConnectionLocator
         }
 
         if (! isset($this->instances[$type][$name])) {
-            $this->instances[$type][$name] = ($this->factories[$type][$name])();
+            $this->instances[$type][$name] = $this->newConnection(
+                $this->factories[$type][$name],
+                "{$type}:{$name}"
+            );
         }
 
         return $this->instances[$type][$name];
+    }
+
+    protected function newConnection(
+        callable $factory,
+        string $label
+    ) : Connection
+    {
+        $connection = $factory();
+        $queryLogger = function (array $entry) use ($label) : void {
+            $entry = ['connection' => $label] + $entry;
+            $this->addLogEntry($entry);
+        };
+        $connection->setQueryLogger($queryLogger);
+        $connection->logQueries($this->logQueries);
+        return $connection;
     }
 
     public function hasRead() : bool
@@ -165,5 +191,40 @@ class ConnectionLocator
     public function isLockedToWrite() : bool
     {
         return $this->lockToWrite;
+    }
+
+    public function logQueries(bool $logQueries = true) : void
+    {
+        if ($this->instances[static::DEFAULT] !== null) {
+            $this->instances[static::DEFAULT]->logQueries($logQueries);
+        }
+
+        $types = [static::READ, static::WRITE];
+        foreach ($types as $type) {
+            foreach ($this->instances[$type] as $connection) {
+                $connection->logQueries($logQueries);
+            }
+        }
+
+        $this->logQueries = $logQueries;
+    }
+
+    public function getQueries()
+    {
+        return $this->queries;
+    }
+
+    public function setQueryLogger(callable $queryLogger)
+    {
+        $this->queryLogger = $queryLogger;
+    }
+
+    protected function addLogEntry(array $entry) : void
+    {
+        if ($this->queryLogger !== null) {
+            ($this->queryLogger)($entry);
+        } else {
+            $this->queries[] = $entry;
+        }
     }
 }

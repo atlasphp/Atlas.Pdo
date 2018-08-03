@@ -219,3 +219,64 @@ foreach ($connection->yieldUnique($stm, $bind) as $key => $row) {
     // ...
 }
 ```
+
+## Query Logging
+
+It is sometimes useful to see a log of all queries passing through a
+_Connection_. To do so, call its `logQueries()` method, issue your queries, and
+then call `getQueries()`.
+
+```php
+// start logging
+$connection->logQueries(true);
+
+// at this point, all query(), exec(), perform(), fetch*(), and yield*()
+// queries will be logged.
+
+// get the query log entries
+$queries = $connection->getQueries();
+
+// stop logging
+$connection->logQueries(false);
+```
+
+> **Warning:**
+>
+> The _Connection_ query logger will not capture queries executed on an
+> independent PDOStatement. Only queries going through the _Connection_
+> will be logged.
+
+Each query log entry will be an array with these keys:
+
+- `start`: when the query started
+- `finish`: when the query finished
+- `duration`: how long the query took
+- `statement`: the query statement string
+- `values`: the array of bound values
+- `trace`: an exception trace showing where the query was issued
+
+You may wish to set a custom logger on the _Connection_. To do so, call
+`setQueryLogger()` and pass a callable with the signature
+`function (array $entry) : void`.
+
+```php
+class CustomDebugger
+{
+    public function __invoke(array $entry) : void
+    {
+        // call an injected logger to record the entry
+    }
+}
+
+$customDebugger = new CustomDebugger();
+$connection->setQueryLogger($customDebugger);
+$connection->logQueries(true);
+
+// now the Connection will send query log entries to the CustomDebugger
+```
+
+> **Note:**
+>
+> If you set a custom logger, the _Connection_ will no longer retain its own
+> query log entries; they will all go to the custom logger. This means that
+> `getQueries()` on the _Connection_ not show any new entries.
