@@ -360,7 +360,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         $this->connection->logQueries(true);
         $stm = "SELECT id, name FROM pdotest WHERE id = :id";
         $sth = $this->connection->prepare($stm);
-        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
+        $this->assertInstanceOf(LoggedStatement::CLASS, $sth);
 
         $this->assertTrue($sth->execute(['id' => '0']));
 
