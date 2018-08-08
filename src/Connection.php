@@ -23,8 +23,7 @@ use PDOStatement;
  * @method mixed getAttribute($attribute)
  * @method bool inTransaction()
  * @method string lastInsertId(string $name = null)
- * @method PDOStatement prepare(string $statement, array $options = null)
- * @method string quote($value, int $parameter_type = PDO::PARAM_STR)
+ * @method string quote($value, int $dataType = PDO::PARAM_STR)
  * @method mixed setAttribute($attribute, $value)
  */
 class Connection
@@ -112,18 +111,31 @@ class Connection
         return $rowCount;
     }
 
+    public function prepare(
+        string $statement,
+        array $driverOptions = []
+    ) : PDOStatement
+    {
+        $sth = $this->pdo->prepare($statement, $driverOptions);
+        if ($sth instanceof LoggedStatement) {
+            $sth->setLogEntry($this->newLogEntry($statement));
+            $sth->setQueryLogger(function (array $entry) : void {
+                $this->addLogEntry($entry);
+            });
+        }
+        return $sth;
+    }
+
     public function perform(
         string $statement,
         array $values = []
     ) : PDOStatement
     {
-        $entry = $this->newLogEntry($statement);
         $sth = $this->prepare($statement);
         foreach ($values as $name => $args) {
-            $entry['values'][$name] = $this->performBind($sth, $name, $args);
+            $this->performBind($sth, $name, $args);
         }
         $sth->execute();
-        $this->addLogEntry($entry);
         return $sth;
     }
 
@@ -136,7 +148,7 @@ class Connection
 
         if (! is_array($args)) {
             $sth->bindValue($name, $args);
-            return $args;
+            return;
         }
 
         $type = $args[1] ?? PDO::PARAM_STR;
@@ -145,7 +157,6 @@ class Connection
         }
 
         $sth->bindValue($name, ...$args);
-        return $args[0];
     }
 
     public function query(string $statement, ...$fetch) : PDOStatement
@@ -340,6 +351,12 @@ class Connection
     public function logQueries(bool $logQueries = true) : void
     {
         $this->logQueries = $logQueries;
+
+        $statementClass = ($this->logQueries)
+            ? LoggedStatement::CLASS
+            : PDOStatement::CLASS;
+
+        $this->pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, [$statementClass]);
     }
 
     public function getQueries()
@@ -359,7 +376,7 @@ class Connection
             'finish' => null,
             'duration' => null,
             'statement' => $statement,
-            'values' => null,
+            'values' => [],
             'trace' => null,
         ];
     }
