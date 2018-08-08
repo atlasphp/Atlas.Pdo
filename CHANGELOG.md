@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.1.0
+
+This release adds query logging and backtracing functionality via both the ConnectionLocator and an individual Connection. Cf. the new `logQueries()`, `getQueries()`, and `setQueryLogger()` methods on those classes.
+
 ## 1.0.1
 
 - The `Connection::new()` and `factory()` methods now instantiate via the `static` keyword instead of the class name, making the Connection class more amenable to extension.
