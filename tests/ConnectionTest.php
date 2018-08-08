@@ -329,7 +329,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         // query logging turned on
         $this->connection->logQueries(true);
         $sth = $this->connection->perform($stm, ['id' => [false, PDO::PARAM_BOOL]]);
-        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
+        $this->assertInstanceOf(LoggedStatement::CLASS, $sth);
 
         $queries = $this->connection->getQueries();
         $this->assertCount(1, $queries);
