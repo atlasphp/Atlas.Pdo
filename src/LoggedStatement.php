@@ -28,7 +28,7 @@ class LoggedStatement extends PDOStatement
         $this->queryLogger = $queryLogger;
     }
 
-    public function execute($inputParameters = null)
+    public function execute($inputParameters = null) : bool
     {
         if ($inputParameters !== null) {
             $this->logEntry['values'] = array_replace(
@@ -37,9 +37,9 @@ class LoggedStatement extends PDOStatement
             );
         }
 
-        $sth = parent::execute($inputParameters);
+        $result = parent::execute($inputParameters);
         ($this->queryLogger)($this->logEntry);
-        return $sth;
+        return $result;
     }
 
     public function bindValue(
