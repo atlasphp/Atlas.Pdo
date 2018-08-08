@@ -357,6 +357,14 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
 
     public function testStatementLogging()
     {
+        // query logging turned off
+        $stm = "SELECT id, name FROM pdotest WHERE id = :id";
+        $sth = $this->connection->prepare($stm);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
+        $this->assertTrue($sth->execute(['id' => '0']));
+        $this->assertSame([], $this->connection->getQueries());
+
+        // query logging turned on
         $this->connection->logQueries(true);
         $stm = "SELECT id, name FROM pdotest WHERE id = :id";
         $sth = $this->connection->prepare($stm);
