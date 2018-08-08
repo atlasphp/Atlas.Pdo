@@ -329,7 +329,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         // query logging turned on
         $this->connection->logQueries(true);
         $sth = $this->connection->perform($stm, ['id' => [false, PDO::PARAM_BOOL]]);
-        $this->assertInstanceOf(PDOStatement::class, $sth);
+        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
 
         $queries = $this->connection->getQueries();
         $this->assertCount(1, $queries);
@@ -353,5 +353,26 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         $this->assertSame('Atlas\\Pdo\\Connection::commit', $queries[2]['statement']);
         $this->assertSame('Atlas\\Pdo\\Connection::beginTransaction', $queries[3]['statement']);
         $this->assertSame('Atlas\\Pdo\\Connection::rollBack', $queries[4]['statement']);
+    }
+
+    public function testStatementLogging()
+    {
+        $this->connection->logQueries(true);
+        $stm = "SELECT id, name FROM pdotest WHERE id = :id";
+        $sth = $this->connection->prepare($stm);
+        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
+
+        $this->assertTrue($sth->execute(['id' => '0']));
+
+        $queries = $this->connection->getQueries();
+        $this->assertCount(1, $queries);
+
+        $query = $queries[0];
+        $this->assertTrue($query['start'] > 0);
+        $this->assertTrue($query['finish'] > $query['start']);
+        $this->assertTrue($query['duration'] > 0);
+        $this->assertTrue($query['statement'] == 'SELECT id, name FROM pdotest WHERE id = :id');
+        $this->assertTrue($query['values']['id'] === '0');
+        $this->assertTrue($query['trace'] != '');
     }
 }
