@@ -10,7 +10,6 @@ declare(strict_types=1);
 
 namespace Atlas\Pdo;
 
-use PDO;
 use PDOStatement;
 
 class LoggedStatement extends PDOStatement
