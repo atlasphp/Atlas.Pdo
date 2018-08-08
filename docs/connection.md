@@ -240,12 +240,6 @@ $queries = $connection->getQueries();
 $connection->logQueries(false);
 ```
 
-> **Warning:**
->
-> The _Connection_ query logger will not capture queries executed on an
-> independent PDOStatement. Only queries going through the _Connection_
-> will be logged.
-
 Each query log entry will be an array with these keys:
 
 - `start`: when the query started
