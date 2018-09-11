@@ -4,7 +4,7 @@ Some applications may use multiple database servers; for example, one for writes
 
 ## Instantiation
 
-The easiest way to create a _ConnectionLoctor_ is to use its static  `new()` method, either with _PDO_ connection arguments, or with an actual _PDO_ instance:
+The easiest way to create a _ConnectionLocator_ is to use its static  `new()` method, either with _PDO_ connection arguments, or with an actual _PDO_ instance:
 
 ```php
 use Atlas\Pdo\ConnectionLocator;
