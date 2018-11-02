@@ -45,7 +45,7 @@ class LoggedStatement extends PDOStatement
     public function bindValue(
         $parameter,
         $value,
-        $dataType = null
+        $dataType = \PDO::PARAM_STR
     ) : bool
     {
         $result = parent::bindValue($parameter, $value, $dataType);
