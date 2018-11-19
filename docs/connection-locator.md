@@ -67,7 +67,7 @@ Retrieve a _Connection_ from the locator when you need it. This will create the 
 
 - `getRead()` will return a random read _Connection_; after the first call, `getRead()` will always return the same _Connection_. (If no read _Connections_ are defined, it will return the default connection.)
 
-- `getWrite()` will return a random write _Connection_; after the first call, `getWrite()` will always return the same _Connection_. (If no read _Connections_ are defined, it will return the default connection.)
+- `getWrite()` will return a random write _Connection_; after the first call, `getWrite()` will always return the same _Connection_. (If no write _Connections_ are defined, it will return the default connection.)
 
 ```php
 $read = $connectionLocator->getRead();
