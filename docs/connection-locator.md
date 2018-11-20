@@ -37,12 +37,10 @@ $connectionLocator->setWriteFactory('master', Connection::factory(
 
 // read (slave) #1
 $connectionLocator->setReadFactory('slave1', Connection::factory(
-    return new Connection(
-        'mysql:host=slave1.db.localhost;dbname=database',
-        'username',
-        'password'
-    );
-});
+    'mysql:host=slave1.db.localhost;dbname=database',
+    'username',
+    'password'
+));
 
 // read (slave) #2
 $connectionLocator->setReadFactory('slave2', Connection::factory(
