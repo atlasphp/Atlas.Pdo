@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## 1.1.1
+
+Fixed a faulty default parameter value in LoggedStatement.
+
+Also updated documentation, especially typo fixes.
+
 ## 1.1.0
 
 This release adds query logging and backtracing functionality via both the ConnectionLocator and an individual Connection. Cf. the new `logQueries()`, `getQueries()`, and `setQueryLogger()` methods on those classes.
