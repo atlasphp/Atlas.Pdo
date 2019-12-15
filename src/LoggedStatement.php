@@ -10,6 +10,7 @@ declare(strict_types=1);
 
 namespace Atlas\Pdo;
 
+use PDO;
 use PDOStatement;
 
 class LoggedStatement extends PDOStatement
@@ -30,7 +31,7 @@ class LoggedStatement extends PDOStatement
 
     public function execute($inputParameters = null) : bool
     {
-        if ($inputParameters !== null && $this->logEntry) {
+        if ($inputParameters !== null && $this->logEntry !== null) {
             $this->logEntry['values'] = array_replace(
                 $this->logEntry['values'],
                 $inputParameters
@@ -38,16 +39,18 @@ class LoggedStatement extends PDOStatement
         }
 
         $result = parent::execute($inputParameters);
-        if ($this->queryLogger && $this->logEntry) {
+
+        if ($this->queryLogger && $this->logEntry !== null) {
             ($this->queryLogger)($this->logEntry);
         }
+
         return $result;
     }
 
     public function bindValue(
         $parameter,
         $value,
-        $dataType = \PDO::PARAM_STR
+        $dataType = PDO::PARAM_STR
     ) : bool
     {
         $result = parent::bindValue($parameter, $value, $dataType);
