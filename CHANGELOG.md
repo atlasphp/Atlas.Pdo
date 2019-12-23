@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## 1.1.2
+
+Fixed #10 so that LoggedStatement can execute with plain PDO.
+
 ## 1.1.1
 
 Fixed a faulty default parameter value in LoggedStatement.
