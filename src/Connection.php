@@ -36,6 +36,8 @@ class Connection
 
     protected $queryLogger;
 
+    protected $statementClass = PDOStatement::class;
+
     public static function new(...$args) : Connection
     {
         if ($args[0] instanceof PDO) {
@@ -117,7 +119,8 @@ class Connection
     ) : PDOStatement
     {
         $sth = $this->pdo->prepare($statement, $driverOptions);
-        if ($sth instanceof LoggedStatement) {
+        if ($this->statementClass == LoggedStatement::class) {
+            $sth = new LoggedStatement($sth);
             $sth->setLogEntry($this->newLogEntry($statement));
             $sth->setQueryLogger(function (array $entry) : void {
                 $this->addLogEntry($entry);
@@ -163,6 +166,9 @@ class Connection
     {
         $entry = $this->newLogEntry($statement);
         $sth = $this->pdo->query($statement, ...$fetch);
+        if ($this->statementClass == LoggedStatement::class) {
+            $sth = new LoggedStatement($sth);
+        }
         $this->addLogEntry($entry);
         return $sth;
     }
@@ -352,11 +358,9 @@ class Connection
     {
         $this->logQueries = $logQueries;
 
-        $statementClass = ($this->logQueries)
+        $this->statementClass = ($this->logQueries)
             ? LoggedStatement::CLASS
             : PDOStatement::CLASS;
-
-        $this->pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, [$statementClass]);
     }
 
     public function getQueries()

@@ -383,20 +383,4 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($query['values']['id'] === '0');
         $this->assertTrue($query['trace'] != '');
     }
-
-    public function testLoggedStatementCreateFromPdoPrepare()
-    {
-        // query logging turned on
-        $this->connection->logQueries(true);
-
-        $stm = "SELECT id FROM pdotest WHERE id = 0";
-        // prepare from native pdo
-        $sth = $this->pdo->prepare($stm);
-        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
-        $this->assertInstanceOf(LoggedStatement::CLASS, $sth);
-
-        $this->assertTrue($sth->execute());
-        $queries = $this->connection->getQueries();
-        $this->assertCount(0, $queries);
-    }
 }
