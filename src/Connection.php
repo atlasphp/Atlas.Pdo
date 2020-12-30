@@ -87,9 +87,17 @@ class Connection
 
     public function commit() : bool
     {
+        $executionPerformed = false;
         $entry = $this->newLogEntry(__METHOD__);
-        $result = $this->pdo->commit();
-        $this->addLogEntry($entry);
+
+        try {
+            $result = $this->pdo->commit();
+            $executionPerformed = true;
+        } finally {
+            $entry['performed'] = $executionPerformed;
+            $this->addLogEntry($entry);
+        }
+
         return $result;
     }
 
