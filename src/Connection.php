@@ -90,14 +90,13 @@ class Connection
 
     public function commit() : bool
     {
-        $executionPerformed = false;
         $entry = $this->newLogEntry(__METHOD__);
+        $entry['performed'] = false;
 
         try {
             $result = $this->pdo->commit();
-            $executionPerformed = true;
+            $entry['performed'] = true;
         } finally {
-            $entry['performed'] = $executionPerformed;
             $this->addLogEntry($entry);
         }
 
@@ -394,6 +393,7 @@ class Connection
             'start' => microtime(true),
             'finish' => null,
             'duration' => null,
+            'performed' => null,
             'statement' => $statement,
             'values' => [],
             'trace' => null,
@@ -404,6 +404,10 @@ class Connection
     {
         if (! $this->logQueries) {
             return;
+        }
+
+        if ($entry['performed'] === null) {
+            $entry['performed'] = true;
         }
 
         $entry['finish'] = microtime(true);
