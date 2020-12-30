@@ -189,7 +189,7 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
         // query logging turned off
         $connection = $locator->getDefault();
         $sth = $connection->perform($stm);
-        $this->assertInstanceOf(PDOStatement::class, $sth);
+        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
         $this->assertSame([], $locator->getQueries());
 
         // query logging turned on
@@ -197,7 +197,7 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
 
         // default connection
         $sth = $connection->perform($stm);
-        $this->assertInstanceOf(PDOStatement::class, $sth);
+        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
 
         // read and write connections
         $types = ['read', 'write'];
@@ -206,7 +206,7 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
                 $name = $type . $i;
                 $connection = $locator->get(strtoupper($type), $name);
                 $sth = $connection->perform($stm);
-                $this->assertInstanceOf(PDOStatement::class, $sth);
+                $this->assertInstanceOf(PDOStatement::CLASS, $sth);
             }
         }
 
@@ -249,7 +249,7 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
 
         $connection = $locator->getDefault();
         $sth = $connection->perform('SELECT * FROM sqlite_master');
-        $this->assertInstanceOf(PDOStatement::class, $sth);
+        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
 
         $this->assertCount(1, $entries);
         $this->assertSame('SELECT * FROM sqlite_master', $entries[0]['statement']);
@@ -267,6 +267,6 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
 
         $connection = $locator->get(ConnectionLocator::WRITE, 'persistent-connection');
 
-        $this->assertInstanceOf(Connection::class, $connection);
+        $this->assertInstanceOf(Connection::CLASS, $connection);
     }
 }
