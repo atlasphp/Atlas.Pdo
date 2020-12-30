@@ -15,15 +15,17 @@ use PDOStatement;
 
 class LoggedStatement extends PDOStatement
 {
-    private $statement;
-
     private $logEntry;
 
     private $queryLogger;
 
-    public function __construct(PDOStatement $statement)
+    private $parent;
+
+    public static function new(PDOStatement $parent = null)
     {
-        $this->statement = $statement;
+        $sth = new self();
+        $sth->parent = $parent;
+        return $sth;
     }
 
     public function setLogEntry(array $logEntry) : void
@@ -38,7 +40,10 @@ class LoggedStatement extends PDOStatement
 
     public function execute($inputParameters = null) : bool
     {
-        $result = $this->statement->execute($inputParameters);
+        $result = $this->parent
+            ? $this->parent->execute($inputParameters)
+            : parent::execute($inputParameters);
+
         $this->log($inputParameters);
         return $result;
     }
@@ -65,16 +70,22 @@ class LoggedStatement extends PDOStatement
         $dataType = PDO::PARAM_STR
     ) : bool
     {
-        $result = $this->statement->bindValue($parameter, $value, $dataType);
+        $result = $this->parent
+            ? $this->parent->bindValue($parameter, $value, $dataType)
+            : parent::bindValue($parameter, $value, $dataType);
+
         if ($result && $this->logEntry !== null) {
             $this->logEntry['values'][$parameter] = $value;
         }
+
         return $result;
     }
 
     public function fetch($fetch_style = null, $cursor_orientation = PDO::FETCH_ORI_NEXT, $cursor_offset = 0)
     {
-        return $this->statement->fetch(...func_get_args());
+        return $this->parent
+            ? $this->parent->fetch(...func_get_args())
+            : parent::fetch(...func_get_args());
     }
 
     public function bindParam(
@@ -84,81 +95,113 @@ class LoggedStatement extends PDOStatement
         $length = null,
         $driver_options = null
     ) {
-        return $this->statement->bindParam(...func_get_args());
+        return $this->parent
+            ? $this->parent->bindParam($parameter, $variable, $data_type, $length, $driver_options)
+            : parent::bindParam($parameter, $variable, $data_type, $length, $driver_options);
     }
 
     public function bindColumn($column, &$param, $type = null, $maxlen = null, $driverdata = null)
     {
-        return $this->statement->bindColumn(...func_get_args());
+        return $this->parent
+            ? $this->parent->bindColumn($column, $param, $type, $maxlen, $driverdata)
+            : parent::bindColumn($column, $param, $type, $maxlen, $driverdata);
     }
 
     public function rowCount()
     {
-        return $this->statement->rowCount();
+        return $this->parent
+            ? $this->parent->rowCount()
+            : parent::rowCount();
     }
 
     public function fetchColumn($column_number = 0)
     {
-        return $this->statement->fetchColumn(...func_get_args());
+        return $this->parent
+            ? $this->parent->fetchColumn(...func_get_args())
+            : parent::fetchColumn(...func_get_args());
     }
 
     public function fetchAll($fetch_style = null, $fetch_argument = null, $ctor_args = [])
     {
-        return $this->statement->fetchAll(...func_get_args());
+        return $this->parent
+            ? $this->parent->fetchAll(...func_get_args())
+            : parent::fetchAll(...func_get_args());
     }
 
-    public function fetchObject($class_name = "stdClass", $ctor_args = [])
+    public function fetchObject($class_name = 'stdClass', $ctor_args = [])
     {
-        return $this->statement->fetchObject(...func_get_args());
+        return $this->parent
+            ? $this->parent->fetchObject(...func_get_args())
+            : parent::fetchObject(...func_get_args());
     }
 
     public function errorCode()
     {
-        return $this->statement->errorCode();
+        return $this->parent
+            ? $this->parent->errorCode()
+            : parent::errorCode();
     }
 
     public function errorInfo()
     {
-        return $this->statement->errorInfo();
+        return $this->parent
+            ? $this->parent->errorInfo()
+            : parent::errorInfo();
     }
 
     public function setAttribute($attribute, $value)
     {
-        return $this->statement->setAttribute($attribute, $value);
+        return $this->parent
+            ? $this->parent->setAttribute(...func_get_args())
+            : parent::setAttribute(...func_get_args());
     }
 
     public function getAttribute($attribute)
     {
-        return $this->statement->getAttribute($attribute);
+        return $this->parent
+            ? $this->parent->getAttribute(...func_get_args())
+            : parent::getAttribute(...func_get_args());
     }
 
     public function columnCount()
     {
-        return $this->statement->columnCount();
+        return $this->parent
+            ? $this->parent->columnCount()
+            : parent::columnCount();
     }
 
     public function getColumnMeta($column)
     {
-        return $this->statement->getColumnMeta($column);
+        return $this->parent
+            ? $this->parent->getColumnMeta(...func_get_args())
+            : parent::getColumnMeta(...func_get_args());
     }
 
-    public function setFetchMode($mode, $classNameObject = null, array $ctorarfg = [])
+    public function setFetchMode($mode, $params = null)
     {
-        return $this->statement->setFetchMode(...func_get_args());
+        return $this->parent
+            ? $this->parent->setFetchMode(...func_get_args())
+            : parent::setFetchMode(...func_get_args());
     }
 
     public function nextRowset()
     {
-        return $this->statement->nextRowset();
+        return $this->parent
+            ? $this->parent->nextRowset()
+            : parent::nextRowset();
     }
 
     public function closeCursor()
     {
-        return $this->statement->closeCursor();
+        return $this->parent
+            ? $this->parent->closeCursor()
+            : parent::closeCursor();
     }
 
     public function debugDumpParams()
     {
-        return $this->statement->debugDumpParams();
+        return $this->parent
+            ? $this->parent->debugDumpParams()
+            : parent::debugDumpParams();
     }
 }

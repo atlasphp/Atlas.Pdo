@@ -36,7 +36,7 @@ class Connection
 
     protected $queryLogger;
 
-    protected $statementClass = PDOStatement::class;
+    protected $persistent;
 
     public static function new(...$args) : Connection
     {
@@ -58,6 +58,7 @@ class Connection
     {
         $this->pdo = $pdo;
         $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $this->persistent = $this->pdo->getAttribute(PDO::ATTR_PERSISTENT);
     }
 
     public function __call(
@@ -127,13 +128,18 @@ class Connection
     ) : PDOStatement
     {
         $sth = $this->pdo->prepare($statement, $driverOptions);
-        if ($this->statementClass == LoggedStatement::class) {
-            $sth = new LoggedStatement($sth);
+
+        if ($this->logQueries && $this->persistent) {
+            $sth = LoggedStatement::new($sth);
+        }
+
+        if ($sth instanceof LoggedStatement) {
             $sth->setLogEntry($this->newLogEntry($statement));
             $sth->setQueryLogger(function (array $entry) : void {
                 $this->addLogEntry($entry);
             });
         }
+
         return $sth;
     }
 
@@ -174,9 +180,6 @@ class Connection
     {
         $entry = $this->newLogEntry($statement);
         $sth = $this->pdo->query($statement, ...$fetch);
-        if ($this->statementClass == LoggedStatement::class) {
-            $sth = new LoggedStatement($sth);
-        }
         $this->addLogEntry($entry);
         return $sth;
     }
@@ -366,9 +369,13 @@ class Connection
     {
         $this->logQueries = $logQueries;
 
-        $this->statementClass = ($this->logQueries)
+        $statementClass = ($this->logQueries)
             ? LoggedStatement::CLASS
             : PDOStatement::CLASS;
+
+        if (! $this->persistent) {
+            $this->pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, [$statementClass]);
+        }
     }
 
     public function getQueries()
