@@ -48,7 +48,7 @@ class LoggedStatement extends PDOStatement
 
     public function bindColumn($column, &$param, $type = 0, $maxlen = 0, $driverdata = null)
     {
-        $result = $this->parent
+        return $this->parent
             ? $this->parent->bindColumn($column, $param, $type, $maxlen, $driverdata)
             : parent::bindColumn($column, $param, $type, $maxlen, $driverdata);
     }
