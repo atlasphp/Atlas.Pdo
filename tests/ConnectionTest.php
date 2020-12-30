@@ -422,7 +422,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         // when prepared from native PDO, should be PDOStatement
         $sth = $persistent->getPdo()->prepare("SELECT id FROM pdotest WHERE id = 0");
         $this->assertInstanceOf(PDOStatement::CLASS, $sth);
-        $this->assertNotInstanceOf(LoggedStatement::CLASS, $sth);
+        $this->assertNotInstanceOf(PersistentLoggedStatement::CLASS, $sth);
 
         // should not log, because prepared directly from PDO
         $this->assertTrue($sth->execute());
@@ -432,7 +432,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         // when prepared from Connection, should be LoggedStatement
         $sth = $persistent->prepare("SELECT id FROM pdotest WHERE id = 0");
         $this->assertInstanceOf(PDOStatement::CLASS, $sth);
-        $this->assertInstanceOf(LoggedStatement::CLASS, $sth);
+        $this->assertInstanceOf(PersistentLoggedStatement::CLASS, $sth);
 
         // should log, because prepared from Connection
         $this->assertTrue($sth->execute());

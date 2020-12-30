@@ -1,6 +1,7 @@
 <?php
 namespace Atlas\Pdo;
 
+use BadMethodCallException;
 use PDO;
 use PDOStatement;
 use stdClass;
@@ -71,7 +72,12 @@ class LoggedStatementTest extends \PHPUnit\Framework\TestCase
     {
         $connection = $this->init($connectionFactory);
         $sth = $connection->prepare('SELECT * FROM pdotest WHERE name = :name');
-        $this->assertInstanceOf(LoggedStatement::CLASS, $sth);
+
+        $expect = ($connection->getPdo()->getAttribute(PDO::ATTR_PERSISTENT))
+            ? PersistentLoggedStatement::CLASS
+            : LoggedStatement::CLASS;
+
+        $this->assertInstanceOf($expect, $sth);
     }
 
     /**
@@ -79,18 +85,17 @@ class LoggedStatementTest extends \PHPUnit\Framework\TestCase
      */
     public function testBindColumn($connectionFactory)
     {
-        $this->markTestIncomplete('bindColumn() does not work?');
-
         $connection = $this->init($connectionFactory);
         $sth = $connection->prepare('SELECT * FROM pdotest WHERE name = "Anna"');
         $sth->setFetchMode(PDO::FETCH_ASSOC);
-
         $sth->execute();
 
-        $name = 'none';
+        if ($connection->getPdo()->getAttribute(PDO::ATTR_PERSISTENT)) {
+            $this->expectException(BadMethodCallException::CLASS);
+        }
+
         $sth->bindColumn('name', $name);
         $sth->fetch();
-
         $this->assertSame('Anna', $name);
     }
 
@@ -282,18 +287,5 @@ class LoggedStatementTest extends \PHPUnit\Framework\TestCase
         $expect = "SQL: [36] SELECT name FROM pdotest ORDER BY id" . PHP_EOL
             . "Params:  0" . PHP_EOL;
         $this->assertSame($expect, $actual);
-    }
-
-    /**
-     * @dataProvider provideConnectionFactory
-     */
-    public function testNextRowset($connectionFactory)
-    {
-        $this->markTestIncomplete('SQLite does not support rowsets.');
-
-        $connection = $this->init($connectionFactory);
-        $sth = $connection->prepare('SELECT name FROM pdotest ORDER BY id');
-        $sth->execute();
-        $this->assertTrue($sth->nextRowset());
     }
 }
