@@ -254,4 +254,19 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
         $this->assertCount(1, $entries);
         $this->assertSame('SELECT * FROM sqlite_master', $entries[0]['statement']);
     }
+
+    public function testPersistentConnections()
+    {
+        $locator = $this->newLocator();
+        $locator->setWriteFactory('persistent-connection', Connection::factory(
+            'sqlite::memory:',
+            '',
+            '',
+            [PDO::ATTR_PERSISTENT => true]
+        ));
+
+        $connection = $locator->get(ConnectionLocator::WRITE, 'persistent-connection');
+
+        $this->assertInstanceOf(Connection::class, $connection);
+    }
 }
