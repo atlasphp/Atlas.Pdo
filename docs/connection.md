@@ -245,9 +245,23 @@ Each query log entry will be an array with these keys:
 - `start`: when the query started
 - `finish`: when the query finished
 - `duration`: how long the query took
+- `performed`: whether or not the query was actually perfomed; useful
+  for seeing if a `COMMIT` actually occurred
 - `statement`: the query statement string
 - `values`: the array of bound values
 - `trace`: an exception trace showing where the query was issued
+
+### Logged Statements
+
+When queries are not being logged, `Connection::prepare()` will return a normal
+_PDOStatement_. However, when queries *are* being logged, `Connection::prepare()`
+will return an _Atlas\Pdo\LoggedStatement_ instance instead.
+
+The _LoggedStatement_ is an extension of _PDOStatement_, so it works the same
+way, but it has the added behavior of recording to the log when its `execute()`
+method is called.
+
+### Custom Loggers
 
 You may wish to set a custom logger on the _Connection_. To do so, call
 `setQueryLogger()` and pass a callable with the signature
@@ -274,3 +288,15 @@ $connection->logQueries(true);
 > If you set a custom logger, the _Connection_ will no longer retain its own
 > query log entries; they will all go to the custom logger. This means that
 > `getQueries()` on the _Connection_ not show any new entries.
+
+## Persistent Connections
+
+**Unlogged** persistent _Connection_ instances are fully supported, via the
+[`PDO::ATTR_PERSISTENT`](https://www.php.net/manual/en/pdo.connections.php)
+option at construction time.
+
+**Logged** persistent _Connection_ instances are *almost* fully supported. The
+only exception to full support is that, on calling `Connection::prepare()`, the
+returned statement instance (_PersistentLoggedStatement_) does not honor the
+`PDOStatement::bindColumn()` method. All other methods and behaviors are fully
+supported.
