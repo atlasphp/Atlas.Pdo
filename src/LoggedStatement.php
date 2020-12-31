@@ -13,7 +13,7 @@ namespace Atlas\Pdo;
 use PDO;
 use PDOStatement;
 
-class LoggedStatement extends PDOStatement implements LoggedStatementInterface
+class LoggedStatement extends PDOStatement
 {
     private $logEntry;
 

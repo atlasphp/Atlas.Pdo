@@ -129,10 +129,16 @@ class Connection
         $sth = $this->pdo->prepare($statement, $driverOptions);
 
         if ($this->logQueries && $this->persistent) {
-            $sth = PersistentLoggedStatement::new($sth);
+            $sth = PersistentLoggedStatement::new(
+                $sth,
+                function (array $entry) : void {
+                    $this->addLogEntry($entry);
+                },
+                $this->newLogEntry($statement)
+            );
         }
 
-        if ($sth instanceof LoggedStatementInterface) {
+        if ($sth instanceof LoggedStatement) {
             $sth->setLogEntry($this->newLogEntry($statement));
             $sth->setQueryLogger(function (array $entry) : void {
                 $this->addLogEntry($entry);

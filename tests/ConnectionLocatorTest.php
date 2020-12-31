@@ -236,6 +236,66 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($expect, $labels);
     }
 
+    public function testQueryLoggingOnExistingInstances()
+    {
+        $locator = $this->newLocator($this->read, $this->write);
+        $stm = "SELECT * FROM sqlite_master";
+
+        // create instances before logging is turned on
+        $locator->getDefault();
+        $types = ['read', 'write'];
+        foreach ($types as $type) {
+            for ($i = 1; $i <= 3; $i ++) {
+                $name = $type . $i;
+                $locator->get(strtoupper($type), $name);
+            }
+        }
+
+        // now turn on query logging
+        $locator->logQueries(true);
+
+        // default connection
+        $connection = $locator->getDefault();
+        $sth = $connection->perform($stm);
+        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
+
+        // read and write connections
+        $types = ['read', 'write'];
+        foreach ($types as $type) {
+            for ($i = 1; $i <= 3; $i ++) {
+                $name = $type . $i;
+                $connection = $locator->get(strtoupper($type), $name);
+                $sth = $connection->perform($stm);
+                $this->assertInstanceOf(PDOStatement::CLASS, $sth);
+            }
+        }
+
+        $queries = $locator->getQueries();
+        $this->assertCount(7, $queries);
+
+        $labels = [];
+        foreach ($queries as $query) {
+            $labels[] = $query['connection'];
+            $this->assertTrue($query['start'] > 0);
+            $this->assertTrue($query['finish'] > $query['start']);
+            $this->assertTrue($query['duration'] > 0);
+            $this->assertTrue($query['statement'] == 'SELECT * FROM sqlite_master');
+            $this->assertTrue($query['values'] === []);
+            $this->assertTrue($query['trace'] != '');
+        }
+
+        $expect = [
+            'DEFAULT',
+            'READ:read1',
+            'READ:read2',
+            'READ:read3',
+            'WRITE:write1',
+            'WRITE:write2',
+            'WRITE:write3',
+        ];
+        $this->assertSame($expect, $labels);
+    }
+
     public function testSetQueryLogger()
     {
         $entries = [];

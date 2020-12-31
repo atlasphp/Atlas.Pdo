@@ -55,6 +55,14 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(Connection::CLASS, $connection);
     }
 
+    public function test__call()
+    {
+        $this->assertSame(
+            'sqlite',
+            $this->connection->getAttribute(PDO::ATTR_DRIVER_NAME)
+        );
+    }
+
     public function testGetDriverName()
     {
         $this->assertSame('sqlite', $this->connection->getDriverName());
@@ -420,22 +428,29 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         $persistent->logQueries(true);
 
         // when prepared from native PDO, should be PDOStatement
-        $sth = $persistent->getPdo()->prepare("SELECT id FROM pdotest WHERE id = 0");
+        $sth = $persistent->getPdo()->prepare("SELECT id FROM pdotest WHERE id = :id");
         $this->assertInstanceOf(PDOStatement::CLASS, $sth);
         $this->assertNotInstanceOf(PersistentLoggedStatement::CLASS, $sth);
 
         // should not log, because prepared directly from PDO
-        $this->assertTrue($sth->execute());
+        $this->assertTrue($sth->execute(['id' => 0]));
         $queries = $this->connection->getQueries();
         $this->assertCount(0, $queries);
 
         // when prepared from Connection, should be LoggedStatement
-        $sth = $persistent->prepare("SELECT id FROM pdotest WHERE id = 0");
+        $sth = $persistent->prepare("SELECT id FROM pdotest WHERE id = :id");
         $this->assertInstanceOf(PDOStatement::CLASS, $sth);
         $this->assertInstanceOf(PersistentLoggedStatement::CLASS, $sth);
 
         // should log, because prepared from Connection
-        $this->assertTrue($sth->execute());
+        $this->assertTrue($sth->execute(['id' => 0]));
+        $queries = $persistent->getQueries();
+        $this->assertCount(1, $queries);
+
+        // try again without logging; should still be only 1 query
+        $persistent->logQueries(false);
+        $sth = $persistent->prepare("SELECT id FROM pdotest WHERE id = :id");
+        $this->assertTrue($sth->execute(['id' => 0]));
         $queries = $persistent->getQueries();
         $this->assertCount(1, $queries);
     }

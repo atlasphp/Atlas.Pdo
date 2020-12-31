@@ -14,18 +14,23 @@ use BadMethodCallException;
 use PDO;
 use PDOStatement;
 
-class PersistentLoggedStatement extends PDOStatement implements LoggedStatementInterface
+class PersistentLoggedStatement extends PDOStatement
 {
-    private $logEntry;
+    private $parent;
 
     private $queryLogger;
 
-    private $parent;
+    private $logEntry;
 
-    public static function new(PDOStatement $parent = null)
-    {
+    public static function new(
+        PDOStatement $parent,
+        callable $queryLogger,
+        array $logEntry
+    ) {
         $sth = new self();
         $sth->parent = $parent;
+        $sth->queryLogger = $queryLogger;
+        $sth->logEntry = $logEntry;
         return $sth;
     }
 
@@ -66,7 +71,7 @@ class PersistentLoggedStatement extends PDOStatement implements LoggedStatementI
     {
         $result = $this->parent->bindValue($parameter, $value, $dataType);
 
-        if ($result && $this->logEntry !== null) {
+        if ($result) {
             $this->logEntry['values'][$parameter] = $value;
         }
 
@@ -155,24 +160,8 @@ class PersistentLoggedStatement extends PDOStatement implements LoggedStatementI
         return $this->parent->nextRowset();
     }
 
-    /* Logging */
-
-    public function setLogEntry(array $logEntry) : void
-    {
-        $this->logEntry = $logEntry;
-    }
-
-    public function setQueryLogger(callable $queryLogger) : void
-    {
-        $this->queryLogger = $queryLogger;
-    }
-
     private function log($inputParameters) : void
     {
-        if ($this->queryLogger === null || $this->logEntry === null) {
-            return;
-        }
-
         if ($inputParameters !== null) {
             $this->logEntry['values'] = array_replace(
                 $this->logEntry['values'],
