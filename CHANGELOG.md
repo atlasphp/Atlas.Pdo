@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 1.2.0
+
+Added support for persistent connections (#12, #14, #16).
+
+Merged #11 to log COMMIT failure due to exception.
+
+Updated documentation.
+
 ## 1.1.2
 
 Fixed #10 so that LoggedStatement can execute with plain PDO.
