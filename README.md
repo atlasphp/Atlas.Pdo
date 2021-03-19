@@ -14,4 +14,4 @@ This package provides a _Connection_ that decorates any [PDO](http://php.net/PDO
 
 This package also provides a _ConnectionLocator_ to register, instantiate, and retain named _Connection_ objects for default, read (slave), and write (master) databases.
 
-Read the documentation [here](http://atlasphp.io/cassini/pdo/).
+Read the documentation [here](http://atlasphp.io/dymaxion/pdo/).
