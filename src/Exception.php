@@ -15,7 +15,8 @@ class Exception extends \Exception
     public static function connectionNotFound(
         string $type,
         string $name
-    ) : Exception {
+    ) : Exception
+    {
         return new Exception("Connection not found: {$type}:{$name}");
     }
 }

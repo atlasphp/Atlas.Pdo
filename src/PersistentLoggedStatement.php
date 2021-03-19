@@ -16,13 +16,7 @@ use PDOStatement;
 
 class PersistentLoggedStatement extends PDOStatement
 {
-    private $parent;
-
-    private $queryLogger;
-
-    private $logEntry;
-
-    public static function new(
+    static public function new(
         PDOStatement $parent,
         callable $queryLogger,
         array $logEntry
@@ -34,39 +28,45 @@ class PersistentLoggedStatement extends PDOStatement
         return $sth;
     }
 
+    private PDOStatement $parent;
+
+    private mixed $queryLogger;
+
+    private array $logEntry;
+
     /* Atttributes */
 
-    public function setAttribute($attribute, $value)
+    public function setAttribute(int $attribute, mixed $value) : bool
     {
         return $this->parent->setAttribute(...func_get_args());
     }
 
-    public function getAttribute($attribute)
+    public function getAttribute(int $attribute) : mixed
     {
         return $this->parent->getAttribute(...func_get_args());
     }
 
     /* Binding */
 
-    public function bindColumn($column, &$param, $type = 0, $maxlen = 0, $driverdata = null)
+    public function bindColumn(mixed $column, mixed &$param, int $type = 0, int $maxlen = 0, mixed $driverdata = null)
     {
         throw new BadMethodCallException('Cannot call bindColumn() on persistent logged statements.');
     }
 
     public function bindParam(
-        $parameter,
-        &$variable,
-        $data_type = PDO::PARAM_STR,
-        $length = 0,
-        $driver_options = null
-    ) {
+        mixed $parameter,
+        mixed &$variable,
+        int $data_type = PDO::PARAM_STR,
+        int $length = 0,
+        mixed $driver_options = null
+    ) : bool {
         return $this->parent->bindParam($parameter, $variable, $data_type, $length, $driver_options);
     }
 
     public function bindValue(
-        $parameter,
-        $value,
-        $dataType = PDO::PARAM_STR
+        mixed $parameter,
+        mixed $value,
+        int $dataType = PDO::PARAM_STR
     ) : bool
     {
         $result = $this->parent->bindValue($parameter, $value, $dataType);
@@ -80,7 +80,7 @@ class PersistentLoggedStatement extends PDOStatement
 
     /* Execution */
 
-    public function execute($inputParameters = null) : bool
+    public function execute(array $inputParameters = null) : bool
     {
         $result = $this->parent->execute($inputParameters);
         $this->log($inputParameters);
@@ -89,78 +89,82 @@ class PersistentLoggedStatement extends PDOStatement
 
     /* Fetching */
 
-    public function setFetchMode($mode, $params = null)
+    public function setFetchMode(int $mode, ...$args) : bool
     {
         return $this->parent->setFetchMode(...func_get_args());
     }
 
-    public function fetch($fetch_style = null, $cursor_orientation = PDO::FETCH_ORI_NEXT, $cursor_offset = 0)
+    public function fetch(
+        int $fetch_style = null,
+        int $cursor_orientation = PDO::FETCH_ORI_NEXT,
+        int $cursor_offset = 0
+    ) : mixed
     {
         return $this->parent->fetch(...func_get_args());
     }
 
-    public function fetchAll($fetch_style = null, $fetch_argument = null, $ctor_args = [])
+    public function fetchAll(int $fetch_style = PDO::FETCH_BOTH, mixed ...$args) : array|false
     {
         return $this->parent->fetchAll(...func_get_args());
     }
 
-    public function fetchColumn($column_number = 0)
+    public function fetchColumn(int $column_number = 0) : mixed
     {
         return $this->parent->fetchColumn(...func_get_args());
     }
 
-    public function fetchObject($class_name = 'stdClass', $ctor_args = [])
+    public function fetchObject(?string $class_name = 'stdClass', ?array $ctor_args = []) : object|false
     {
         return $this->parent->fetchObject(...func_get_args());
     }
 
     /* Metadata */
 
-    public function rowCount()
+    public function rowCount() : int
     {
         return $this->parent->rowCount();
     }
 
-    public function columnCount()
+    public function columnCount() : int
     {
         return $this->parent->columnCount();
     }
 
-    public function getColumnMeta($column)
+    public function getColumnMeta(int $column) : array
     {
         return $this->parent->getColumnMeta(...func_get_args());
     }
 
     /* Errors */
 
-    public function errorCode()
+    public function errorCode() : ?string
     {
         return $this->parent->errorCode();
     }
 
-    public function errorInfo()
+    public function errorInfo() : ?array
     {
         return $this->parent->errorInfo();
     }
 
     /* Other */
 
-    public function closeCursor()
+    public function closeCursor() : bool
     {
         return $this->parent->closeCursor();
     }
 
-    public function debugDumpParams()
+    public function debugDumpParams() : void
     {
-        return $this->parent->debugDumpParams();
+        $this->parent->debugDumpParams();
     }
 
-    public function nextRowset()
+    public function nextRowset() : bool
     {
         return $this->parent->nextRowset();
     }
 
-    private function log($inputParameters) : void
+    private function log(?array $inputParameters) : void
     {
         if ($inputParameters !== null) {
             $this->logEntry['values'] = array_replace(

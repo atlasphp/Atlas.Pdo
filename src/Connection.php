@@ -28,15 +28,15 @@ use PDOStatement;
  */
 class Connection
 {
-    protected $pdo;
+    protected PDO $pdo;
 
-    protected $logQueries = false;
+    protected bool $logQueries = false;
 
-    protected $queries = [];
+    protected array $queries = [];
 
-    protected $queryLogger;
+    protected mixed $queryLogger = null;
 
-    protected $persistent;
+    protected bool $persistent = false;
 
     public static function new(...$args) : Connection
     {
@@ -57,14 +57,14 @@ class Connection
     public function __construct(PDO $pdo)
     {
         $this->pdo = $pdo;
-        $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         $this->persistent = $this->pdo->getAttribute(PDO::ATTR_PERSISTENT);
     }
 
     public function __call(
         string $method,
         array $params
-    ) {
+    ) : mixed
+    {
         return $this->pdo->$method(...$params);
     }
 
@@ -85,6 +85,7 @@ class Connection
         $entry = $this->newLogEntry(__METHOD__);
         $result = $this->pdo->beginTransaction();
         $this->addLogEntry($entry);
+
         return $result;
     }
 
@@ -108,6 +109,7 @@ class Connection
         $entry = $this->newLogEntry(__METHOD__);
         $result = $this->pdo->rollBack();
         $this->addLogEntry($entry);
+
         return $result;
     }
 
@@ -118,6 +120,7 @@ class Connection
         $entry = $this->newLogEntry($statement);
         $rowCount = $this->pdo->exec($statement);
         $this->addLogEntry($entry);
+
         return $rowCount;
     }
 
@@ -134,15 +137,8 @@ class Connection
                 function (array $entry) : void {
                     $this->addLogEntry($entry);
                 },
-                $this->newLogEntry($statement)
+                $this->newLogEntry()
             );
-        }
-
-        if ($sth instanceof LoggedStatement) {
-            $sth->setLogEntry($this->newLogEntry($statement));
-            $sth->setQueryLogger(function (array $entry) : void {
-                $this->addLogEntry($entry);
-            });
         }
 
         return $sth;
@@ -154,14 +150,20 @@ class Connection
     ) : PDOStatement
     {
         $sth = $this->prepare($statement);
+
         foreach ($values as $name => $args) {
             $this->performBind($sth, $name, $args);
         }
+
         $sth->execute();
         return $sth;
     }
 
-    protected function performBind(PDOStatement $sth, $name, $args)
+    protected function performBind(
+        PDOStatement $sth,
+        mixed $name,
+        mixed $args
+    ) : void
     {
         if (is_int($name)) {
             // sequential placeholders are 1-based
@@ -174,6 +176,7 @@ class Connection
         }
 
         $type = $args[1] ?? PDO::PARAM_STR;
+
         if ($type === PDO::PARAM_BOOL && is_bool($args[0])) {
             $args[0] = $args[0] ? '1' : '0';
         }
@@ -243,7 +246,8 @@ class Connection
         array $values = [],
         string $class = 'stdClass',
         array $ctorArgs = []
-    ) {
+    ) : ?object
+    {
         $sth = $this->perform($statement, $values);
 
         if (! empty($ctorArgs)) {
@@ -276,9 +280,11 @@ class Connection
     {
         $sth = $this->perform($statement, $values);
         $result = $sth->fetch(PDO::FETCH_ASSOC);
+
         if ($result === false) {
             return null;
         }
+
         return $result;
     }
 
@@ -295,7 +301,8 @@ class Connection
         string $statement,
         array $values = [],
         int $column = 0
-    ) {
+    ) : mixed
+    {
         $sth = $this->perform($statement, $values);
         return $sth->fetchColumn($column);
     }
@@ -308,6 +315,7 @@ class Connection
     ) : Generator
     {
         $sth = $this->perform($statement, $values);
+
         while ($row = $sth->fetch(PDO::FETCH_ASSOC)) {
             yield $row;
         }
@@ -319,6 +327,7 @@ class Connection
     ) : Generator
     {
         $sth = $this->perform($statement, $values);
+
         while ($row = $sth->fetch(PDO::FETCH_UNIQUE)) {
             $key = array_shift($row);
             yield $key => $row;
@@ -332,6 +341,7 @@ class Connection
     ) : Generator
     {
         $sth = $this->perform($statement, $values);
+
         while ($row = $sth->fetch(PDO::FETCH_NUM)) {
             yield $row[$column];
         }
@@ -363,6 +373,7 @@ class Connection
     ) : Generator
     {
         $sth = $this->perform($statement, $values);
+
         while ($row = $sth->fetch(PDO::FETCH_NUM)) {
             yield $row[0] => $row[1];
         }
@@ -374,16 +385,27 @@ class Connection
     {
         $this->logQueries = $logQueries;
 
-        $statementClass = ($this->logQueries)
-            ? LoggedStatement::CLASS
-            : PDOStatement::CLASS;
-
-        if (! $this->persistent) {
-            $this->pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, [$statementClass]);
+        if ($this->persistent) {
+            return;
         }
+
+        if (! $this->logQueries) {
+            $this->pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, [PDOStatement::CLASS]);
+            return;
+        }
+
+        $this->pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, [
+            LoggedStatement::CLASS,
+            [
+                function (array $entry) : void {
+                    $this->addLogEntry($entry);
+                },
+                $this->newLogEntry()
+            ]
+        ]);
     }
 
-    public function getQueries()
+    public function getQueries() : array
     {
         return $this->queries;
     }
@@ -393,7 +415,7 @@ class Connection
         $this->queryLogger = $queryLogger;
     }
 
-    protected function newLogEntry(string $statement) : array
+    protected function newLogEntry(string $statement = null) : array
     {
         return [
             'start' => microtime(true),
@@ -420,10 +442,11 @@ class Connection
         $entry['duration'] = $entry['finish'] - $entry['start'];
         $entry['trace'] = (new Exception())->getTraceAsString();
 
-        if ($this->queryLogger !== null) {
-            ($this->queryLogger)($entry);
-        } else {
+        if ($this->queryLogger === null) {
             $this->queries[] = $entry;
+            return;
         }
+
+        ($this->queryLogger)($entry);
     }
 }

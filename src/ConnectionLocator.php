@@ -30,19 +30,19 @@ class ConnectionLocator
         self::WRITE => [],
     ];
 
-    protected $read;
+    protected mixed $read = null;
 
-    protected $write;
+    protected mixed $write = null;
 
-    protected $lockToWrite = false;
+    protected bool $lockToWrite = false;
 
-    protected $logQueries = false;
+    protected bool $logQueries = false;
 
-    protected $queries = [];
+    protected array $queries = [];
 
-    protected $queryLogger;
+    protected mixed $queryLogger = null;
 
-    public static function new(...$args)
+    public static function new(...$args) : static
     {
         if ($args[0] instanceof Connection) {
             return new ConnectionLocator(function () use ($args) {
@@ -209,12 +209,12 @@ class ConnectionLocator
         $this->logQueries = $logQueries;
     }
 
-    public function getQueries()
+    public function getQueries() : array
     {
         return $this->queries;
     }
 
-    public function setQueryLogger(callable $queryLogger)
+    public function setQueryLogger(callable $queryLogger) : void
     {
         $this->queryLogger = $queryLogger;
     }

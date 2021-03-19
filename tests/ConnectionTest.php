@@ -24,7 +24,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         10 => 'Kara',
     ];
 
-    public function setUp()
+    public function setUp() : void
     {
         if (! extension_loaded('pdo_sqlite')) {
             $this->markTestSkipped("Need 'pdo_sqlite' to test in memory.");
@@ -404,10 +404,10 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         $this->assertInstanceOf(PDOStatement::CLASS, $sth);
         $this->assertInstanceOf(LoggedStatement::CLASS, $sth);
 
-        // should not log, because prepared directly from PDO
+        // logs even though prepared directly from PDO
+        $this->assertCount(0, $this->connection->getQueries());
         $this->assertTrue($sth->execute());
-        $queries = $this->connection->getQueries();
-        $this->assertCount(0, $queries);
+        $this->assertCount(1, $this->connection->getQueries());
     }
 
     public function testPersistent()

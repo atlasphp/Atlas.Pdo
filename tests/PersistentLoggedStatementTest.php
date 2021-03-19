@@ -21,7 +21,7 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
         10 => 'Kara',
     ];
 
-    protected function setUp()
+    protected function setUp() : void
     {
         $this->connection = Connection::new(
             'sqlite::memory:',

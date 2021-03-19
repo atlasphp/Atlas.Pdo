@@ -15,33 +15,43 @@ use PDOStatement;
 
 class LoggedStatement extends PDOStatement
 {
-    private $logEntry;
+    private mixed $queryLogger;
 
-    private $queryLogger;
+    private array $logEntry;
 
-    public function setLogEntry(array $logEntry) : void
-    {
-        $this->logEntry = $logEntry;
-    }
-
-    public function setQueryLogger(callable $queryLogger) : void
-    {
+    protected function __construct(
+        callable $queryLogger,
+        array $logEntry
+    ) {
         $this->queryLogger = $queryLogger;
+        $this->logEntry = $logEntry;
+        $this->logEntry['statement'] = $this->queryString;
     }
 
-    public function execute($inputParameters = null) : bool
+    public function execute(array $inputParameters = null) : bool
     {
         $result = parent::execute($inputParameters);
         $this->log($inputParameters);
         return $result;
     }
 
-    private function log($inputParameters) : void
+    public function bindValue(
+        mixed $parameter,
+        mixed $value,
+        int $dataType = PDO::PARAM_STR
+    ) : bool
     {
-        if ($this->queryLogger === null || $this->logEntry === null) {
-            return;
+        $result = parent::bindValue($parameter, $value, $dataType);
+
+        if ($result && $this->logEntry !== null) {
+            $this->logEntry['values'][$parameter] = $value;
         }
 
+        return $result;
+    }
+
+    private function log(?array $inputParameters) : void
+    {
         if ($inputParameters !== null) {
             $this->logEntry['values'] = array_replace(
                 $this->logEntry['values'],
@@ -50,18 +60,5 @@ class LoggedStatement extends PDOStatement
         }
 
         ($this->queryLogger)($this->logEntry);
-    }
-
-    public function bindValue(
-        $parameter,
-        $value,
-        $dataType = PDO::PARAM_STR
-    ) : bool
-    {
-        $result = parent::bindValue($parameter, $value, $dataType);
-        if ($result && $this->logEntry !== null) {
-            $this->logEntry['values'][$parameter] = $value;
-        }
-        return $result;
     }
 }
