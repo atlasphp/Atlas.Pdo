@@ -19,10 +19,8 @@ class LoggedStatement extends PDOStatement
 
     private array $logEntry;
 
-    protected function __construct(
-        callable $queryLogger,
-        array $logEntry
-    ) {
+    protected function __construct(callable $queryLogger, array $logEntry)
+    {
         $this->queryLogger = $queryLogger;
         $this->logEntry = $logEntry;
         $this->logEntry['statement'] = $this->queryString;

@@ -59,7 +59,8 @@ class PersistentLoggedStatement extends PDOStatement
         int $data_type = PDO::PARAM_STR,
         int $length = 0,
         mixed $driver_options = null
-    ) : bool {
+    ) : bool
+    {
         return $this->parent->bindParam($parameter, $variable, $data_type, $length, $driver_options);
     }
 

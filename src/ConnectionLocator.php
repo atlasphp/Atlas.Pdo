@@ -30,9 +30,9 @@ class ConnectionLocator
         self::WRITE => [],
     ];
 
-    protected mixed $read = null;
+    protected ?Connection $read = null;
 
-    protected mixed $write = null;
+    protected ?Connection $write = null;
 
     protected bool $lockToWrite = false;
 

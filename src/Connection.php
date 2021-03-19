@@ -28,15 +28,15 @@ use PDOStatement;
  */
 class Connection
 {
-    protected PDO $pdo;
-
     protected bool $logQueries = false;
+
+    protected bool $persistent = false;
+
+    protected PDO $pdo;
 
     protected array $queries = [];
 
     protected mixed $queryLogger = null;
-
-    protected bool $persistent = false;
 
     public static function new(...$args) : Connection
     {
@@ -62,10 +62,10 @@ class Connection
 
     public function __call(
         string $method,
-        array $params
+        array $arguments
     ) : mixed
     {
-        return $this->pdo->$method(...$params);
+        return $this->pdo->$method(...$arguments);
     }
 
     public function getDriverName() : string
