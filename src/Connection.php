@@ -10,7 +10,6 @@ declare(strict_types=1);
 
 namespace Atlas\Pdo;
 
-use Exception;
 use Generator;
 use PDO;
 use PDOStatement;
@@ -206,39 +205,63 @@ class Connection
     public function fetchAll(
         string $statement,
         array $values = []
-    ) : array|false
+    ) : array
     {
         $sth = $this->perform($statement, $values);
-        return $sth->fetchAll(PDO::FETCH_ASSOC);
+        $res = $sth->fetchAll(PDO::FETCH_ASSOC);
+
+        if ($res === false) {
+            throw Exception::fetchFailed(__FUNCTION__);
+        }
+
+        return $res;
     }
 
     public function fetchUnique(
         string $statement,
         array $values = []
-    ) : array|false
+    ) : array
     {
         $sth  = $this->perform($statement, $values);
-        return $sth->fetchAll(PDO::FETCH_UNIQUE);
+        $res = $sth->fetchAll(PDO::FETCH_UNIQUE);
+
+        if ($res === false) {
+            throw Exception::fetchFailed(__FUNCTION__);
+        }
+
+        return $res;
     }
 
     public function fetchColumn(
         string $statement,
         array $values = [],
         int $column = 0
-    ) : array|false
+    ) : array
     {
         $sth = $this->perform($statement, $values);
-        return $sth->fetchAll(PDO::FETCH_COLUMN, $column);
+        $res = $sth->fetchAll(PDO::FETCH_COLUMN, $column);
+
+        if ($res === false) {
+            throw Exception::fetchFailed(__FUNCTION__);
+        }
+
+        return $res;
     }
 
     public function fetchGroup(
         string $statement,
         array $values = [],
         int $style = PDO::FETCH_COLUMN
-    ) : array|false
+    ) : array
     {
         $sth = $this->perform($statement, $values);
-        return $sth->fetchAll(PDO::FETCH_GROUP | $style);
+        $res = $sth->fetchAll(PDO::FETCH_GROUP | $style);
+
+        if ($res === false) {
+            throw Exception::fetchFailed(__FUNCTION__);
+        }
+
+        return $res;
     }
 
     public function fetchObject(
@@ -249,8 +272,13 @@ class Connection
     ) : ?object
     {
         $sth = $this->perform($statement, $values);
+        $res = $sth->fetchObject($class, ...$args);
 
-        return $sth->fetchObject($class, ...$args);
+        if ($res === false) {
+            throw Exception::fetchFailed(__FUNCTION__);
+        }
+
+        return $res;
     }
 
     public function fetchObjects(
@@ -258,11 +286,16 @@ class Connection
         array $values = [],
         string $class = 'stdClass',
         mixed ...$args
-    ) : array|false
+    ) : array
     {
         $sth = $this->perform($statement, $values);
+        $res = $sth->fetchAll(PDO::FETCH_CLASS, $class, ...$args);
 
-        return $sth->fetchAll(PDO::FETCH_CLASS, $class, ...$args);
+        if ($res === false) {
+            throw Exception::fetchFailed(__FUNCTION__);
+        }
+
+        return $res;
     }
 
     public function fetchOne(
@@ -283,10 +316,16 @@ class Connection
     public function fetchKeyPair(
         string $statement,
         array $values = []
-    ) : array|false
+    ) : array
     {
         $sth = $this->perform($statement, $values);
-        return $sth->fetchAll(PDO::FETCH_KEY_PAIR);
+        $res = $sth->fetchAll(PDO::FETCH_KEY_PAIR);
+
+        if ($res === false) {
+            throw Exception::fetchFailed(__FUNCTION__);
+        }
+
+        return $res;
     }
 
     public function fetchValue(
@@ -426,7 +465,7 @@ class Connection
 
         $entry['finish'] = microtime(true);
         $entry['duration'] = $entry['finish'] - $entry['start'];
-        $entry['trace'] = (new Exception())->getTraceAsString();
+        $entry['trace'] = (new \Exception())->getTraceAsString();
 
         if ($this->queryLogger === null) {
             $this->queries[] = $entry;
