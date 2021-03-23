@@ -20,8 +20,9 @@ class PersistentLoggedStatement extends PDOStatement
         PDOStatement $parent,
         callable $queryLogger,
         array $logEntry
-    ) {
-        $sth = new self();
+    ) : static
+    {
+        $sth = new static();
         $sth->parent = $parent;
         $sth->queryLogger = $queryLogger;
         $sth->logEntry = $logEntry;
@@ -90,7 +91,7 @@ class PersistentLoggedStatement extends PDOStatement
 
     /* Fetching */
 
-    public function setFetchMode(int $mode, ...$args) : bool
+    public function setFetchMode(int $mode, mixed ...$args) : bool
     {
         return $this->parent->setFetchMode(...func_get_args());
     }
@@ -131,7 +132,7 @@ class PersistentLoggedStatement extends PDOStatement
         return $this->parent->columnCount();
     }
 
-    public function getColumnMeta(int $column) : array
+    public function getColumnMeta(int $column) : array|false
     {
         return $this->parent->getColumnMeta(...func_get_args());
     }

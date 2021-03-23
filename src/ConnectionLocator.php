@@ -18,13 +18,13 @@ class ConnectionLocator
 
     const WRITE = 'WRITE';
 
-    protected $factories = [
+    protected array $factories = [
         self::DEFAULT => null,
         self::READ => [],
         self::WRITE => [],
     ];
 
-    protected $instances = [
+    protected array $instances = [
         self::DEFAULT => null,
         self::READ => [],
         self::WRITE => [],
@@ -42,15 +42,15 @@ class ConnectionLocator
 
     protected mixed $queryLogger = null;
 
-    public static function new(...$args) : static
+    public static function new(mixed ...$args) : static
     {
         if ($args[0] instanceof Connection) {
-            return new ConnectionLocator(function () use ($args) {
+            return new static(function () use ($args) {
                 return $args[0];
             });
         }
 
-        return new ConnectionLocator(Connection::factory(...$args));
+        return new static(Connection::factory(...$args));
     }
 
     public function __construct(
@@ -136,7 +136,7 @@ class ConnectionLocator
             return reset($this->instances[$type]);
         }
 
-        return $this->get($type, array_rand($this->factories[$type]));
+        return $this->get($type, (string) array_rand($this->factories[$type]));
     }
 
     public function get(

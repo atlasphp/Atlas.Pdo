@@ -26,11 +26,16 @@
     },
     "require-dev": {
         "pds/skeleton": "^1.0",
-        "phpunit/phpunit": "^9.0"
+        "phpunit/phpunit": "^9.0",
+        "phpstan/phpstan": "^0.12.82"
     },
     "autoload-dev": {
         "psr-4": {
             "Atlas\\Pdo\\": "tests/"
         }
+    },
+    "scripts": {
+        "test": "./vendor/bin/phpunit",
+        "stan": "./vendor/bin/phpstan analyze -c phpstan.neon src"
     }
 }

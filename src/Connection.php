@@ -20,11 +20,11 @@ use PDOStatement;
  *
  * @method mixed errorCode()
  * @method array errorInfo()
- * @method mixed getAttribute($attribute)
+ * @method mixed getAttribute(int $attribute)
  * @method bool inTransaction()
  * @method string lastInsertId(string $name = null)
- * @method string quote($value, int $dataType = PDO::PARAM_STR)
- * @method mixed setAttribute($attribute, $value)
+ * @method string quote(mixed $string, int $parameterType = PDO::PARAM_STR)
+ * @method mixed setAttribute(int $attribute, mixed $value)
  */
 class Connection
 {
@@ -38,7 +38,7 @@ class Connection
 
     protected mixed $queryLogger = null;
 
-    public static function new(...$args) : Connection
+    public static function new(mixed ...$args) : Connection
     {
         if ($args[0] instanceof PDO) {
             return new static($args[0]);
@@ -47,7 +47,7 @@ class Connection
         return new static(new PDO(...$args));
     }
 
-    public static function factory(...$args) : callable
+    public static function factory(mixed ...$args) : callable
     {
         return function () use ($args) {
             return static::new(...$args);
@@ -115,7 +115,7 @@ class Connection
 
     /* Queries */
 
-    public function exec(string $statement) : int
+    public function exec(string $statement) : int|false
     {
         $entry = $this->newLogEntry($statement);
         $rowCount = $this->pdo->exec($statement);
@@ -184,7 +184,7 @@ class Connection
         $sth->bindValue($name, ...$args);
     }
 
-    public function query(string $statement, ...$fetch) : PDOStatement
+    public function query(string $statement, mixed ...$fetch) : PDOStatement|false
     {
         $entry = $this->newLogEntry($statement);
         $sth = $this->pdo->query($statement, ...$fetch);
@@ -206,7 +206,7 @@ class Connection
     public function fetchAll(
         string $statement,
         array $values = []
-    ) : array
+    ) : array|false
     {
         $sth = $this->perform($statement, $values);
         return $sth->fetchAll(PDO::FETCH_ASSOC);
@@ -215,7 +215,7 @@ class Connection
     public function fetchUnique(
         string $statement,
         array $values = []
-    ) : array
+    ) : array|false
     {
         $sth  = $this->perform($statement, $values);
         return $sth->fetchAll(PDO::FETCH_UNIQUE);
@@ -225,7 +225,7 @@ class Connection
         string $statement,
         array $values = [],
         int $column = 0
-    ) : array
+    ) : array|false
     {
         $sth = $this->perform($statement, $values);
         return $sth->fetchAll(PDO::FETCH_COLUMN, $column);
@@ -235,7 +235,7 @@ class Connection
         string $statement,
         array $values = [],
         int $style = PDO::FETCH_COLUMN
-    ) : array
+    ) : array|false
     {
         $sth = $this->perform($statement, $values);
         return $sth->fetchAll(PDO::FETCH_GROUP | $style);
@@ -245,32 +245,24 @@ class Connection
         string $statement,
         array $values = [],
         string $class = 'stdClass',
-        array $ctorArgs = []
+        mixed ...$args
     ) : ?object
     {
         $sth = $this->perform($statement, $values);
 
-        if (! empty($ctorArgs)) {
-            return $sth->fetchObject($class, $ctorArgs);
-        }
-
-        return $sth->fetchObject($class);
+        return $sth->fetchObject($class, ...$args);
     }
 
     public function fetchObjects(
         string $statement,
         array $values = [],
         string $class = 'stdClass',
-        array $ctorArgs = []
-    ) : array
+        mixed ...$args
+    ) : array|false
     {
         $sth = $this->perform($statement, $values);
 
-        if (! empty($ctorArgs)) {
-            return $sth->fetchAll(PDO::FETCH_CLASS, $class, $ctorArgs);
-        }
-
-        return $sth->fetchAll(PDO::FETCH_CLASS, $class);
+        return $sth->fetchAll(PDO::FETCH_CLASS, $class, ...$args);
     }
 
     public function fetchOne(
@@ -291,7 +283,7 @@ class Connection
     public function fetchKeyPair(
         string $statement,
         array $values = []
-    ) : array
+    ) : array|false
     {
         $sth = $this->perform($statement, $values);
         return $sth->fetchAll(PDO::FETCH_KEY_PAIR);
@@ -351,19 +343,13 @@ class Connection
         string $statement,
         array $values = [],
         string $class = 'stdClass',
-        array $ctorArgs = []
+        mixed ...$args
     ) : Generator
     {
         $sth = $this->perform($statement, $values);
 
-        if (empty($ctorArgs)) {
-            while ($instance = $sth->fetchObject($class)) {
-                yield $instance;
-            }
-        } else {
-            while ($instance = $sth->fetchObject($class, $ctorArgs)) {
-                yield $instance;
-            }
+        while ($instance = $sth->fetchObject($class, ...$args)) {
+            yield $instance;
         }
     }
 
