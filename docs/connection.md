@@ -2,17 +2,12 @@
 
 ## Installation
 
-This package is installable and autoloadable via [Composer](https://getcomposer.org/)
-as [atlas/pdo](https://packagist.org/packages/atlas/pdo). Add the following lines
-to your `composer.json` file, then call `composer update`.
+This package is installable and autoloadable via [Composer](https://getcomposer.org/) as [atlas/pdo](https://packagist.org/packages/atlas/pdo).
 
-```json
-{
-    "require": {
-        "atlas/pdo": "~1.0"
-    }
-}
 ```
+composer require atlas/pdo ^2.0
+```
+
 
 ## Instantiation
 
@@ -39,6 +34,22 @@ use Atlas\Pdo\Connection;
 
 // get a callable factory that creates a Connection
 $factory = Connection::factory('sqlite::memory:');
+
+// later, call the factory to instantiate the Connection
+$connection = $factory();
+```
+
+If you want to make sure certain SQL queries are run at connection time, you can create your own callable factory:
+
+```php
+use Atlas\Pdo\Connection;
+
+// define a callable factory that creates a Connection and executes a query
+$factory = function () {
+    $connection = Connection::new('sqlite::memory:');
+    $connection->exec('...');
+    return $connection;
+}
 
 // later, call the factory to instantiate the Connection
 $connection = $factory();
