@@ -27,17 +27,7 @@ use PDOStatement;
  */
 class Connection
 {
-    protected bool $logQueries = false;
-
-    protected bool $persistent = false;
-
-    protected PDO $pdo;
-
-    protected array $queries = [];
-
-    protected mixed $queryLogger = null;
-
-    public static function new(mixed ...$args) : Connection
+    static public function new(mixed ...$args) : Connection
     {
         if ($args[0] instanceof PDO) {
             return new static($args[0]);
@@ -46,16 +36,23 @@ class Connection
         return new static(new PDO(...$args));
     }
 
-    public static function factory(mixed ...$args) : callable
+    static public function factory(mixed ...$args) : callable
     {
         return function () use ($args) {
             return static::new(...$args);
         };
     }
 
-    public function __construct(PDO $pdo)
+    protected bool $logQueries = false;
+
+    protected bool $persistent = false;
+
+    protected array $queries = [];
+
+    protected mixed /* callable */ $queryLogger = null;
+
+    public function __construct(protected PDO $pdo)
     {
-        $this->pdo = $pdo;
         $this->persistent = $this->pdo->getAttribute(PDO::ATTR_PERSISTENT);
     }
 

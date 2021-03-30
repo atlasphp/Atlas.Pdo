@@ -15,14 +15,10 @@ use PDOStatement;
 
 class LoggedStatement extends PDOStatement
 {
-    private mixed $queryLogger;
-
-    private array $logEntry;
-
-    protected function __construct(callable $queryLogger, array $logEntry)
-    {
-        $this->queryLogger = $queryLogger;
-        $this->logEntry = $logEntry;
+    protected function __construct(
+        protected mixed /* callable */ $queryLogger,
+        protected array $logEntry
+    ) {
         $this->logEntry['statement'] = $this->queryString;
     }
 

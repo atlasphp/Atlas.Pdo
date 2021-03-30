@@ -193,7 +193,7 @@ foreach ($connection->yieldColumn($stm, $bind) as $val) {
 This is the yielding equivalent of `fetchKeyPair()`.
 
 ```php
-foreach ($connection->yieldPairs($stm, $bind) as $key => $val) {
+foreach ($connection->yieldKeyPair($stm, $bind) as $key => $val) {
     // ...
 }
 ```

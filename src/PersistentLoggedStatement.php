@@ -31,7 +31,7 @@ class PersistentLoggedStatement extends PDOStatement
 
     private PDOStatement $parent;
 
-    private mixed $queryLogger;
+    private mixed /* callable */ $queryLogger;
 
     private array $logEntry;
 
