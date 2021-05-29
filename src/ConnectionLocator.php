@@ -12,17 +12,24 @@ namespace Atlas\Pdo;
 
 class ConnectionLocator
 {
-    const DEFAULT = 'DEFAULT';
+    public const DEFAULT = 'DEFAULT';
 
-    const READ = 'READ';
+    public const READ = 'READ';
 
-    const WRITE = 'WRITE';
+    public const WRITE = 'WRITE';
 
-    protected array $factories = [
-        self::DEFAULT => null,
-        self::READ => [],
-        self::WRITE => [],
-    ];
+    static public function new(mixed $arg, mixed ...$args) : static
+    {
+        if ($arg instanceof Connection) {
+            $defaultFactory = function () use ($arg) {
+                return $arg;
+            };
+
+            return new static($defaultFactory);
+        }
+
+        return new static(Connection::factory($arg, ...$args));
+    }
 
     protected array $instances = [
         self::DEFAULT => null,
@@ -42,38 +49,16 @@ class ConnectionLocator
 
     protected mixed $queryLogger = null;
 
-    public static function new(mixed ...$args) : static
-    {
-        if ($args[0] instanceof Connection) {
-            return new static(function () use ($args) {
-                return $args[0];
-            });
-        }
-
-        return new static(Connection::factory(...$args));
-    }
-
     public function __construct(
-        callable $defaultFactory = null,
-        array $readFactories = [],
-        array $writeFactories = []
+        protected mixed /* callable */ $defaultFactory = null,
+        protected array $readFactories = [],
+        protected array $writeFactories = []
     ) {
-        if ($defaultFactory) {
-            $this->setDefaultFactory($defaultFactory);
-        }
-
-        foreach ($readFactories as $name => $factory) {
-            $this->setReadFactory($name, $factory);
-        }
-
-        foreach ($writeFactories as $name => $factory) {
-            $this->setWriteFactory($name, $factory);
-        }
     }
 
     public function setDefaultFactory(callable $factory) : void
     {
-        $this->factories[static::DEFAULT] = $factory;
+        $this->defaultFactory = $factory;
     }
 
     public function setReadFactory(
@@ -81,7 +66,7 @@ class ConnectionLocator
         callable $factory
     ) : void
     {
-        $this->factories[static::READ][$name] = $factory;
+        $this->readFactories[$name] = $factory;
     }
 
     public function setWriteFactory(
@@ -89,14 +74,14 @@ class ConnectionLocator
         callable $factory
     ) : void
     {
-        $this->factories[static::WRITE][$name] = $factory;
+        $this->writeFactories[$name] = $factory;
     }
 
     public function getDefault() : Connection
     {
         if ($this->instances[static::DEFAULT] === null) {
             $this->instances[static::DEFAULT] = $this->newConnection(
-                $this->factories[static::DEFAULT],
+                $this->defaultFactory,
                 static::DEFAULT
             );
         }
@@ -111,7 +96,7 @@ class ConnectionLocator
         }
 
         if (! isset($this->read)) {
-            $this->read = $this->getType(static::READ);
+            $this->read = $this->getConnection(static::READ, $this->readFactories);
         }
 
         return $this->read;
@@ -120,15 +105,15 @@ class ConnectionLocator
     public function getWrite() : Connection
     {
         if (! isset($this->write)) {
-            $this->write = $this->getType(static::WRITE);
+            $this->write = $this->getConnection(static::WRITE, $this->writeFactories);
         }
 
         return $this->write;
     }
 
-    protected function getType(string $type) : Connection
+    protected function getConnection(string $type, array $factories) : Connection
     {
-        if (empty($this->factories[$type])) {
+        if (empty($factories)) {
             return $this->getDefault();
         }
 
@@ -136,7 +121,7 @@ class ConnectionLocator
             return reset($this->instances[$type]);
         }
 
-        return $this->get($type, (string) array_rand($this->factories[$type]));
+        return $this->get($type, (string) array_rand($factories));
     }
 
     public function get(
@@ -144,13 +129,16 @@ class ConnectionLocator
         string $name
     ) : Connection
     {
-        if (! isset($this->factories[$type][$name])) {
+        $prop = strtolower($type) . 'Factories';
+        $factories = $this->$prop;
+
+        if (! isset($factories[$name])) {
             throw Exception::connectionNotFound($type, $name);
         }
 
         if (! isset($this->instances[$type][$name])) {
             $this->instances[$type][$name] = $this->newConnection(
-                $this->factories[$type][$name],
+                $factories[$name],
                 "{$type}:{$name}"
             );
         }
@@ -164,12 +152,15 @@ class ConnectionLocator
     ) : Connection
     {
         $connection = $factory();
+
         $queryLogger = function (array $entry) use ($label) : void {
             $entry = ['connection' => $label] + $entry;
             $this->addLogEntry($entry);
         };
+
         $connection->setQueryLogger($queryLogger);
         $connection->logQueries($this->logQueries);
+
         return $connection;
     }
 
@@ -200,6 +191,7 @@ class ConnectionLocator
         }
 
         $types = [static::READ, static::WRITE];
+
         foreach ($types as $type) {
             foreach ($this->instances[$type] as $connection) {
                 $connection->logQueries($logQueries);
