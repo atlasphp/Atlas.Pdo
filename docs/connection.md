@@ -2,9 +2,8 @@
 
 ## Installation
 
-This package is installable and autoloadable via [Composer]
-(https://getcomposer.org/) as [atlas/pdo]
-(https://packagist.org/packages/atlas/pdo).
+This package is installable and autoloadable via [Composer](https://getcomposer.org/)
+as [atlas/pdo](https://packagist.org/packages/atlas/pdo).
 
 ```
 composer require atlas/pdo ^2.0
