@@ -81,7 +81,6 @@ class Connection
         $entry = $this->newLogEntry(__METHOD__);
         $result = $this->pdo->beginTransaction();
         $this->addLogEntry($entry);
-
         return $result;
     }
 
@@ -105,7 +104,6 @@ class Connection
         $entry = $this->newLogEntry(__METHOD__);
         $result = $this->pdo->rollBack();
         $this->addLogEntry($entry);
-
         return $result;
     }
 
@@ -116,7 +114,6 @@ class Connection
         $entry = $this->newLogEntry($statement);
         $rowCount = $this->pdo->exec($statement);
         $this->addLogEntry($entry);
-
         return $rowCount;
     }
 
@@ -219,7 +216,7 @@ class Connection
         array $values = []
     ) : array
     {
-        $sth  = $this->perform($statement, $values);
+        $sth = $this->perform($statement, $values);
         $res = $sth->fetchAll(PDO::FETCH_UNIQUE);
 
         if ($res === false) {
@@ -412,7 +409,10 @@ class Connection
         }
 
         if (! $this->logQueries) {
-            $this->pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, [PDOStatement::CLASS]);
+            $this->pdo->setAttribute(
+                PDO::ATTR_STATEMENT_CLASS,
+                [PDOStatement::CLASS]
+            );
             return;
         }
 

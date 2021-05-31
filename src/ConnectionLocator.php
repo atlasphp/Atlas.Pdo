@@ -96,7 +96,10 @@ class ConnectionLocator
         }
 
         if (! isset($this->read)) {
-            $this->read = $this->getConnection(static::READ, $this->readFactories);
+            $this->read = $this->getConnection(
+                static::READ,
+                $this->readFactories
+            );
         }
 
         return $this->read;
@@ -105,13 +108,19 @@ class ConnectionLocator
     public function getWrite() : Connection
     {
         if (! isset($this->write)) {
-            $this->write = $this->getConnection(static::WRITE, $this->writeFactories);
+            $this->write = $this->getConnection(
+                static::WRITE,
+                $this->writeFactories
+            );
         }
 
         return $this->write;
     }
 
-    protected function getConnection(string $type, array $factories) : Connection
+    protected function getConnection(
+        string $type,
+        array $factories
+    ) : Connection
     {
         if (empty($factories)) {
             return $this->getDefault();

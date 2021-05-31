@@ -49,9 +49,17 @@ class PersistentLoggedStatement extends PDOStatement
 
     /* Binding */
 
-    public function bindColumn(mixed $column, mixed &$param, int $type = 0, int $maxlen = 0, mixed $driverdata = null)
+    public function bindColumn(
+        mixed $column,
+        mixed &$param,
+        int $type = 0,
+        int $maxlen = 0,
+        mixed $driverdata = null
+    ) /* : bool */
     {
-        throw new BadMethodCallException('Cannot call bindColumn() on persistent logged statements.');
+        throw new BadMethodCallException(
+            'Cannot call bindColumn() on persistent logged statements.'
+        );
     }
 
     public function bindParam(
@@ -62,7 +70,13 @@ class PersistentLoggedStatement extends PDOStatement
         mixed $driver_options = null
     ) : bool
     {
-        return $this->parent->bindParam($parameter, $variable, $data_type, $length, $driver_options);
+        return $this->parent->bindParam(
+            $parameter,
+            $variable,
+            $data_type,
+            $length,
+            $driver_options
+        );
     }
 
     public function bindValue(
@@ -105,7 +119,10 @@ class PersistentLoggedStatement extends PDOStatement
         return $this->parent->fetch(...func_get_args());
     }
 
-    public function fetchAll(int $fetch_style = PDO::FETCH_BOTH, mixed ...$args) : array|false
+    public function fetchAll(
+        int $fetch_style = PDO::FETCH_BOTH,
+        mixed ...$args
+    ) : array|false
     {
         return $this->parent->fetchAll(...func_get_args());
     }
@@ -115,7 +132,10 @@ class PersistentLoggedStatement extends PDOStatement
         return $this->parent->fetchColumn(...func_get_args());
     }
 
-    public function fetchObject(?string $class_name = 'stdClass', ?array $ctor_args = []) : object|false
+    public function fetchObject(
+        ?string $class_name = 'stdClass',
+        ?array $ctor_args = []
+    ) : object|false
     {
         return $this->parent->fetchObject(...func_get_args());
     }
@@ -156,9 +176,9 @@ class PersistentLoggedStatement extends PDOStatement
         return $this->parent->closeCursor();
     }
 
-    public function debugDumpParams() : void
+    public function debugDumpParams() : ?bool
     {
-        $this->parent->debugDumpParams();
+        return $this->parent->debugDumpParams();
     }
 
     public function nextRowset() : bool
