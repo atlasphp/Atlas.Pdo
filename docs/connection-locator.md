@@ -1,10 +1,16 @@
 # Connection Locator
 
-Some applications may use multiple database servers; for example, one for writes, and one or more for reads. The _ConnectionLocator_ allows you to define multiple _Connection_ objects for lazy-loaded read and write connections. It will create the connections only when they are when called. The _Connection_ creation logic should be wrapped in factory callable.
+Some applications may use multiple database servers; for example, one for
+writes, and one or more for reads. The _ConnectionLocator_ allows you to define
+multiple _Connection_ objects for lazy-loaded read and write connections. It
+will create the connections only when they are when called. The _Connection_
+creation logic should be wrapped in factory callable.
 
 ## Instantiation
 
-The easiest way to create a _ConnectionLocator_ is to use its static  `new()` method, either with _PDO_ connection arguments, or with an actual _PDO_ instance:
+The easiest way to create a _ConnectionLocator_ is to use its static  `new
+()` method, either with _PDO_ connection arguments, or with an actual _PDO_
+instance:
 
 ```php
 use Atlas\Pdo\ConnectionLocator;
@@ -20,12 +26,14 @@ $connectionLocator = ConnectionLocator::new(
 $connectionLocator = ConnectionLocator::new($pdo);
 ```
 
-Doing so will define the default connection factory for the _ConnectionLocator_.
+Doing so will define the default connection factory for
+the _ConnectionLocator_.
 
 
 ## Runtime Configuration
 
-Once you have a _ConnectionLocator_, you can add as many named read and write connection factories as you like:
+Once you have a _ConnectionLocator_, you can add as many named read and write
+connection factories as you like:
 
 ```php
 // the write (master) server
@@ -59,13 +67,18 @@ $connectionLocator->setReadFactory('slave3', Connection::factory(
 
 ## Getting Connections
 
-Retrieve a _Connection_ from the locator when you need it. This will create the _Connection_ (if needed) and then return it.
+Retrieve a _Connection_ from the locator when you need it. This will create
+the _Connection_ (if needed) and then return it.
 
 - `getDefault()` will return the default _Connection_.
 
-- `getRead()` will return a random read _Connection_; after the first call, `getRead()` will always return the same _Connection_. (If no read _Connections_ are defined, it will return the default connection.)
+- `getRead()` will return a random read _Connection_; after the first call,
+  `getRead()` will always return the same _Connection_. (If no
+  read _Connections_ are defined, it will return the default connection.)
 
-- `getWrite()` will return a random write _Connection_; after the first call, `getWrite()` will always return the same _Connection_. (If no write _Connections_ are defined, it will return the default connection.)
+- `getWrite()` will return a random write _Connection_; after the first call,
+  `getWrite()` will always return the same _Connection_. (If no
+  write _Connections_ are defined, it will return the default connection.)
 
 ```php
 $read = $connectionLocator->getRead();
@@ -75,7 +88,8 @@ $readAgain = $connectionLocator->getRead();
 assert($read === $readAgain); // true
 ```
 
-You can get any read or write connection directly by name using the `get()` method:
+You can get any read or write connection directly by name using the `get()`
+method:
 
 ```php
 $foo = $connectionLocator->get(ConnectionLocator::READ, 'foo');
@@ -84,7 +98,8 @@ $bar = $connectionLocator->get(ConnectionLocator::WRITE, 'bar');
 
 ## Locking To The Write Connection
 
-If you call the `lockToWrite()` method, calls to `getRead()` will return the write connection instead of the read connection.
+If you call the `lockToWrite()` method, calls to `getRead()` will return the
+write connection instead of the read connection.
 
 ```php
 $read = $connectionLocator->getRead();
@@ -99,7 +114,10 @@ You can disable the lock-to-write behavior by calling `lockToWrite(false)`.
 
 ## Construction-Time Configuration
 
-The _ConnectionLocator_ can be configured with all its connections at construction time; this can be useful with dependency injection mechanisms. (Note that this requires using the constructor proper, not the static `new()` method.)
+The _ConnectionLocator_ can be configured with all its connections at
+construction time; this can be useful with dependency injection mechanisms.
+(Note that this requires using the constructor proper, not the static `new
+()` method.)
 
 ```php
 use Atlas\Pdo\Connection;
