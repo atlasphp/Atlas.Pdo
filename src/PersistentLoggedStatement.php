@@ -39,12 +39,12 @@ class PersistentLoggedStatement extends PDOStatement
 
     public function setAttribute(int $attribute, mixed $value) : bool
     {
-        return $this->parent->setAttribute(...func_get_args());
+        return $this->parent->setAttribute($attribute, $value);
     }
 
     public function getAttribute(int $attribute) : mixed
     {
-        return $this->parent->getAttribute(...func_get_args());
+        return $this->parent->getAttribute($attribute);
     }
 
     /* Binding */
