@@ -66,12 +66,23 @@ $connection = $factory();
 The _Connection_ acts as a proxy to the decorated PDO instance, so you can call
 any method on the _Connection_ that you would normally call on PDO.
 
+## Performing Queries
+
+Instead of issuing `prepare()`, a series of `bindValue()` calls, and then
+`execute()`, you can bind values and get back a _PDOStatement_ result in one
+call using the _Connection_ `perform()` method:
+
+```php
+$stm  = 'SELECT * FROM test WHERE foo = :foo AND bar = :bar';
+$bind = ['foo' => 'baz', 'bar' => 'dib'];
+
+$sth = $connection->perform($stm, $bind);
+```
+
 ## Fetching Results
 
 The _Connection_ provides several `fetch*()` methods to help reduce boilerplate
-code. Instead of issuing `prepare()`, a series of `bindValue()` calls, `execute
-()`, and then `fetch*()` on a _PDOStatement_, you can bind values and fetch
-results in one call on _Connection_ directly.
+code; these all use `perform()` internally.
 
 ### fetchAffected()
 
@@ -104,8 +115,8 @@ all rows.
 $result = $connection->fetchColumn($stm, $bind);
 ```
 
-You can choose another column number with an optional third argument(columns are
-zero-indexed):
+You can choose another column number with an optional third argument (columns
+are zero-indexed):
 
 ```php
 // use column 3 (i.e. the 4th column)
@@ -114,7 +125,7 @@ $result = $connection->fetchColumn($stm, $bind, 3);
 
 ### fetchGroup()
 
-The `fetchGroup()` method is like fetchUnique() except that the values aren't
+The `fetchGroup()` method is like `fetchUnique()` except that the values aren't
 wrapped in arrays. Instead, single column values are returned as a single
 dimensional array and multiple columns are returned as an array of arrays.
 
@@ -137,7 +148,7 @@ $result = $connection->fetchKeyPair($stm, $bind);
 ### fetchObject()
 
 The `fetchObject()` method returns the first row as an object of your choosing;
-the columns are mapped to object properties. an optional 4th parameter array
+the columns are mapped to object properties. An optional 4th parameter array
 provides constructor arguments when instantiating the object.
 
 ```php
@@ -243,6 +254,31 @@ foreach ($connection->yieldUnique($stm, $bind) as $key => $row) {
     // ...
 }
 ```
+
+## Explicit Bind Value Types
+
+When binding values on a `perform()`-based query (which includes all `fetch*()`
+and `yield*()` queries), the _Connection_ will use `PDO::PARAM_STR` as the value
+type by default.
+
+If you want to override the default type, pass the value as an array where
+the first element is the value and the second element is the PDO param type.
+For example:
+
+```php
+// PDO::PARAM_STR by default
+$bind['foo'] = 1;
+
+// force to PDO::PARAM_INT
+$bind['foo'] = [1, PDO::PARAM_INT]
+```
+
+> **Note:**
+>
+> If you pass a boolean value and force the type to `PDO::PARAM_BOOL`, the
+> _Connection_ will store the value as a string '0' for `false` or string '1'
+> for `true`. This addresses issues with a long-standing behavior in PDO.
+
 
 ## Query Logging
 
