@@ -54,12 +54,7 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
     public function testInstantiation()
     {
         $sth = $this->connection->prepare('SELECT * FROM pdotest WHERE name = :name');
-
-        $expect = ($this->connection->getPdo()->getAttribute(PDO::ATTR_PERSISTENT))
-            ? PersistentLoggedStatement::CLASS
-            : LoggedStatement::CLASS;
-
-        $this->assertInstanceOf($expect, $sth);
+        $this->assertInstanceOf(PersistentLoggedStatement::CLASS, $sth);
     }
 
     public function testBindColumn_badMethod()

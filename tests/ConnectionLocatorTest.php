@@ -66,6 +66,18 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
         $this->assertSame($pdo, $actual->getDefault()->getPdo());
     }
 
+    public function testSetAndGet()
+    {
+        $locator = new ConnectionLocator();
+        $locator->setDefaultFactory($this->default);
+        $locator->setReadFactory('read1', $this->read['read1']);
+        $locator->setWriteFactory('write1', $this->write['write1']);
+
+        $this->assertSame($this->conns['default'], $locator->getDefault());
+        $this->assertSame($this->conns['read1'], $locator->getRead());
+        $this->assertSame($this->conns['write1'], $locator->getWrite());
+    }
+
     public function testGetDefault()
     {
         $locator = $this->newLocator();
