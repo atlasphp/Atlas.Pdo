@@ -19,9 +19,4 @@ class Exception extends \Exception
     {
         return new Exception("Connection not found: {$type}:{$name}");
     }
-
-    public static function fetchFailed(string $method) : Exception
-    {
-        return new Exception("{$method}() failed");
-    }
 }

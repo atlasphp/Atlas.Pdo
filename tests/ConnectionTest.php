@@ -195,7 +195,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
 
         $stm = "SELECT id, name FROM pdotest WHERE id = -99";
         $actual = $this->connection->fetchOne($stm);
-        $this->assertNull($actual);
+        $this->assertFalse($actual);
     }
 
     public function testFetchGroup()

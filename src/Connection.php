@@ -199,63 +199,39 @@ class Connection
     public function fetchAll(
         string $statement,
         array $values = []
-    ) : array
+    ) : array|false
     {
         $sth = $this->perform($statement, $values);
-        $res = $sth->fetchAll(PDO::FETCH_ASSOC);
-
-        if ($res === false) {
-            throw Exception::fetchFailed(__FUNCTION__);
-        }
-
-        return $res;
-    }
-
-    public function fetchUnique(
-        string $statement,
-        array $values = []
-    ) : array
-    {
-        $sth = $this->perform($statement, $values);
-        $res = $sth->fetchAll(PDO::FETCH_UNIQUE);
-
-        if ($res === false) {
-            throw Exception::fetchFailed(__FUNCTION__);
-        }
-
-        return $res;
+        return $sth->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function fetchColumn(
         string $statement,
         array $values = [],
         int $column = 0
-    ) : array
+    ) : array|false
     {
         $sth = $this->perform($statement, $values);
-        $res = $sth->fetchAll(PDO::FETCH_COLUMN, $column);
-
-        if ($res === false) {
-            throw Exception::fetchFailed(__FUNCTION__);
-        }
-
-        return $res;
+        return $sth->fetchAll(PDO::FETCH_COLUMN, $column);
     }
 
     public function fetchGroup(
         string $statement,
         array $values = [],
         int $style = PDO::FETCH_COLUMN
-    ) : array
+    ) : array|false
     {
         $sth = $this->perform($statement, $values);
-        $res = $sth->fetchAll(PDO::FETCH_GROUP | $style);
+        return $sth->fetchAll(PDO::FETCH_GROUP | $style);
+    }
 
-        if ($res === false) {
-            throw Exception::fetchFailed(__FUNCTION__);
-        }
-
-        return $res;
+    public function fetchKeyPair(
+        string $statement,
+        array $values = []
+    ) : array|false
+    {
+        $sth = $this->perform($statement, $values);
+        return $sth->fetchAll(PDO::FETCH_KEY_PAIR);
     }
 
     public function fetchObject(
@@ -263,16 +239,10 @@ class Connection
         array $values = [],
         string $class = 'stdClass',
         mixed ...$args
-    ) : ?object
+    ) : object|false
     {
         $sth = $this->perform($statement, $values);
-        $res = $sth->fetchObject($class, ...$args);
-
-        if ($res === false) {
-            throw Exception::fetchFailed(__FUNCTION__);
-        }
-
-        return $res;
+        return $sth->fetchObject($class, ...$args);
     }
 
     public function fetchObjects(
@@ -280,46 +250,19 @@ class Connection
         array $values = [],
         string $class = 'stdClass',
         mixed ...$args
-    ) : array
+    ) : array|false
     {
         $sth = $this->perform($statement, $values);
-        $res = $sth->fetchAll(PDO::FETCH_CLASS, $class, ...$args);
-
-        if ($res === false) {
-            throw Exception::fetchFailed(__FUNCTION__);
-        }
-
-        return $res;
+        return $sth->fetchAll(PDO::FETCH_CLASS, $class, ...$args);
     }
 
     public function fetchOne(
         string $statement,
         array $values = []
-    ) : ?array
+    ) : array|false
     {
         $sth = $this->perform($statement, $values);
-        $result = $sth->fetch(PDO::FETCH_ASSOC);
-
-        if ($result === false) {
-            return null;
-        }
-
-        return $result;
-    }
-
-    public function fetchKeyPair(
-        string $statement,
-        array $values = []
-    ) : array
-    {
-        $sth = $this->perform($statement, $values);
-        $res = $sth->fetchAll(PDO::FETCH_KEY_PAIR);
-
-        if ($res === false) {
-            throw Exception::fetchFailed(__FUNCTION__);
-        }
-
-        return $res;
+        return $sth->fetch(PDO::FETCH_ASSOC);
     }
 
     public function fetchValue(
@@ -330,6 +273,15 @@ class Connection
     {
         $sth = $this->perform($statement, $values);
         return $sth->fetchColumn($column);
+    }
+
+    public function fetchUnique(
+        string $statement,
+        array $values = []
+    ) : array|false
+    {
+        $sth = $this->perform($statement, $values);
+        return $sth->fetchAll(PDO::FETCH_UNIQUE);
     }
 
     /* Yielding */
