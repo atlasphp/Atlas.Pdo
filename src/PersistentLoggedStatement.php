@@ -55,7 +55,7 @@ class PersistentLoggedStatement extends PDOStatement
         int $type = 0,
         int $maxlen = 0,
         mixed $driverdata = null
-    ) /* : bool */
+    ) : bool
     {
         throw new BadMethodCallException(
             'Cannot call bindColumn() on persistent logged statements.'
