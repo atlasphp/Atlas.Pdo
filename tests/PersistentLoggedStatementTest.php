@@ -3,11 +3,12 @@ namespace Atlas\Pdo;
 
 use BadMethodCallException;
 use PDO;
-use PDOStatement;
-use stdClass;
 
 class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
 {
+    /**
+     * @var string[]
+     */
     protected $data = [
         1 => 'Anna',
         2 => 'Betty',
@@ -75,7 +76,7 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
 
         $sth->execute();
 
-        $expect = ['id' => '1', 'name' => 'Anna'];
+        $expect = ['id' => 1, 'name' => 'Anna'];
         $actual = $sth->fetch();
         $this->assertSame($expect, $actual);
     }
@@ -91,14 +92,16 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
 
         $sth->execute();
 
-        $expect = ['id' => '1', 'name' => 'Anna'];
+        $expect = ['id' => 1, 'name' => 'Anna'];
         $actual = $sth->fetch();
         $this->assertSame($expect, $actual);
     }
 
     public function testFetchAll()
     {
-        $sth = $this->connection->prepare('SELECT * FROM pdotest WHERE id <= 3 ORDER BY id');
+        $sth = $this->connection->prepare(
+            'SELECT * FROM pdotest WHERE id <= 3 ORDER BY id'
+        );
         $sth->setFetchMode(PDO::FETCH_ASSOC);
 
         $sth->execute();
@@ -106,15 +109,15 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
         $actual = $sth->fetchAll();
         $expect = [
             [
-                'id' => '1',
+                'id'   => 1,
                 'name' => 'Anna',
             ],
             [
-                'id' => '2',
+                'id'   => 2,
                 'name' => 'Betty',
             ],
             [
-                'id' => '3',
+                'id'   => 3,
                 'name' => 'Clara',
             ]
         ];

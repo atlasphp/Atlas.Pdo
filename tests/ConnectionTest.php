@@ -3,24 +3,28 @@ namespace Atlas\Pdo;
 
 use PDO;
 use PDOStatement;
+use PHPUnit\Framework\TestCase;
 use stdClass;
 
-class ConnectionTest extends \PHPUnit\Framework\TestCase
+class ConnectionTest extends TestCase
 {
-    protected $pdo;
+    protected PDO $pdo;
 
-    protected $connection;
+    protected Connection $connection;
 
+    /**
+     * @var string[]
+     */
     protected $data = [
-        1 => 'Anna',
-        2 => 'Betty',
-        3 => 'Clara',
-        4 => 'Donna',
-        5 => 'Fiona',
-        6 => 'Gertrude',
-        7 => 'Hanna',
-        8 => 'Ione',
-        9 => 'Julia',
+        1  => 'Anna',
+        2  => 'Betty',
+        3  => 'Clara',
+        4  => 'Donna',
+        5  => 'Fiona',
+        6  => 'Gertrude',
+        7  => 'Hanna',
+        8  => 'Ione',
+        9  => 'Julia',
         10 => 'Kara',
     ];
 
@@ -132,7 +136,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
     {
         $stm = "SELECT id, name FROM pdotest WHERE id = :id";
         $actual = $this->connection->fetchObject($stm, ['id' => 1]);
-        $this->assertSame('1', $actual->id);
+        $this->assertSame(1, $actual->id);
         $this->assertSame('Anna', $actual->name);
     }
 
@@ -145,7 +149,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
             'Atlas\Pdo\FakeObject',
             ['bar']
         );
-        $this->assertSame('1', $actual->id);
+        $this->assertSame(1, $actual->id);
         $this->assertSame('Anna', $actual->name);
         $this->assertSame('bar', $actual->foo);
     }
