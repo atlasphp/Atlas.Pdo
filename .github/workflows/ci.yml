@@ -77,6 +77,8 @@ jobs:
           - '8.3'
           - '8.4'
     steps:
+      - uses: actions/checkout@v4
+
       - name: "Setup PHP"
         uses: shivammathur/setup-php@2.35.3
         with:
