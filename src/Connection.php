@@ -21,7 +21,7 @@ use PDOStatement;
  * @method array errorInfo()
  * @method mixed getAttribute(int $attribute)
  * @method bool inTransaction()
- * @method string lastInsertId(string $name = null)
+ * @method string lastInsertId(?string $name = null)
  * @method string quote(mixed $string, int $parameterType = PDO::PARAM_STR)
  * @method mixed setAttribute(int $attribute, mixed $value)
  *
