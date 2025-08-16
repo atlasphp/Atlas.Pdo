@@ -238,10 +238,6 @@ class ConnectionLocator
         string $name
     ) : Connection
     {
-        if (strtolower($type) === 'default') {
-            throw Exception::connectionNotFound($type, $name);
-        }
-
         $prop = strtolower($type) . 'Factories';
         /** @var array<string, callable> $factories */
         $factories = $this->$prop;
