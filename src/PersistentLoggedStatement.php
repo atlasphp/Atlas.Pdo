@@ -106,7 +106,7 @@ class PersistentLoggedStatement extends PDOStatement
      * @return bool
      */
     public function bindParam(
-        string|int $parameter,
+        mixed $parameter,
         mixed &$variable,
         int $data_type = PDO::PARAM_STR,
         int $length = 0,
@@ -130,7 +130,7 @@ class PersistentLoggedStatement extends PDOStatement
      * @return bool
      */
     public function bindValue(
-        string|int $parameter,
+        mixed $parameter,
         mixed $value,
         int $dataType = PDO::PARAM_STR
     ) : bool
