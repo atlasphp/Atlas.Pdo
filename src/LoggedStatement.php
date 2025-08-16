@@ -29,13 +29,25 @@ class LoggedStatement extends PDOStatement
         $this->logEntry['statement'] = $this->queryString;
     }
 
-    public function execute(array $inputParameters = null) : bool
+    /**
+     * @param array|null $inputParameters
+     *
+     * @return bool
+     */
+    public function execute(?array $inputParameters = null) : bool
     {
         $result = parent::execute($inputParameters);
         $this->log($inputParameters);
         return $result;
     }
 
+    /**
+     * @param string|int $parameter
+     * @param mixed      $value
+     * @param int        $dataType
+     *
+     * @return bool
+     */
     public function bindValue(
         string|int $parameter,
         mixed $value,
@@ -52,6 +64,11 @@ class LoggedStatement extends PDOStatement
         return $result;
     }
 
+    /**
+     * @param array|null $inputParameters
+     *
+     * @return void
+     */
     private function log(?array $inputParameters) : void
     {
         if ($inputParameters !== null) {
