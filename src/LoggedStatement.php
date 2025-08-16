@@ -13,8 +13,15 @@ namespace Atlas\Pdo;
 use PDO;
 use PDOStatement;
 
+/**
+ * @phpstan-import-type  logEntry from Connection
+ */
 class LoggedStatement extends PDOStatement
 {
+    /**
+     * @param callable $queryLogger
+     * @param logEntry $logEntry
+     */
     protected function __construct(
         protected mixed /* callable */ $queryLogger,
         protected array $logEntry
@@ -30,14 +37,15 @@ class LoggedStatement extends PDOStatement
     }
 
     public function bindValue(
-        mixed $parameter,
+        string|int $parameter,
         mixed $value,
         int $dataType = PDO::PARAM_STR
     ) : bool
     {
+        /** @var int|string $parameter */
         $result = parent::bindValue($parameter, $value, $dataType);
 
-        if ($result && $this->logEntry !== null) {
+        if ($result && !empty($this->logEntry)) {
             $this->logEntry['values'][$parameter] = $value;
         }
 

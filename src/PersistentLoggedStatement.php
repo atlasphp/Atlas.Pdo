@@ -14,8 +14,18 @@ use BadMethodCallException;
 use PDO;
 use PDOStatement;
 
+/**
+ * @phpstan-import-type logEntry from Connection
+ */
 class PersistentLoggedStatement extends PDOStatement
 {
+    /**
+     * @param PDOStatement $parent
+     * @param callable     $queryLogger
+     * @param logEntry     $logEntry
+     *
+     * @return static
+     */
     static public function new(
         PDOStatement $parent,
         callable $queryLogger,
@@ -31,11 +41,15 @@ class PersistentLoggedStatement extends PDOStatement
 
     private PDOStatement $parent;
 
+    /** @var callable  */
     private mixed /* callable */ $queryLogger;
 
+    /**
+     * @var logEntry
+     */
     private array $logEntry;
 
-    /* Atttributes */
+    /* Attributes */
 
     public function setAttribute(int $attribute, mixed $value) : bool
     {
@@ -63,7 +77,7 @@ class PersistentLoggedStatement extends PDOStatement
     }
 
     public function bindParam(
-        mixed $parameter,
+        string|int $parameter,
         mixed &$variable,
         int $data_type = PDO::PARAM_STR,
         int $length = 0,
@@ -80,7 +94,7 @@ class PersistentLoggedStatement extends PDOStatement
     }
 
     public function bindValue(
-        mixed $parameter,
+        string|int $parameter,
         mixed $value,
         int $dataType = PDO::PARAM_STR
     ) : bool
@@ -107,37 +121,46 @@ class PersistentLoggedStatement extends PDOStatement
 
     public function setFetchMode(int $mode, mixed ...$args) : bool
     {
-        return $this->parent->setFetchMode(...func_get_args());
+        return $this->parent->setFetchMode($mode, ...$args);
     }
 
     public function fetch(
-        int $fetch_style = null,
+        int $fetch_style = PDO::FETCH_DEFAULT,
         int $cursor_orientation = PDO::FETCH_ORI_NEXT,
         int $cursor_offset = 0
     ) : mixed
     {
-        return $this->parent->fetch(...func_get_args());
+        return $this->parent->fetch($fetch_style, $cursor_orientation, $cursor_offset);
     }
 
     public function fetchAll(
-        int $fetch_style = PDO::FETCH_BOTH,
+        int $fetch_style = PDO::FETCH_DEFAULT,
         mixed ...$args
-    ) : array|false
+    ) : array
     {
-        return $this->parent->fetchAll(...func_get_args());
+        /** @var array<array-key, callable|int|string> $args */
+        return $this->parent->fetchAll($fetch_style, ...$args);
     }
 
     public function fetchColumn(int $column_number = 0) : mixed
     {
-        return $this->parent->fetchColumn(...func_get_args());
+        return $this->parent->fetchColumn($column_number);
     }
 
+    /**
+     * @template T of object
+     * @param class-string<T> $class_name
+     * @param array           $ctor_args
+     *
+     * @return T|false
+     */
     public function fetchObject(
         ?string $class_name = 'stdClass',
-        ?array $ctor_args = []
+        array $ctor_args = []
     ) : object|false
     {
-        return $this->parent->fetchObject(...func_get_args());
+        /** @var class-string<T> $class_name */
+        return $this->parent->fetchObject($class_name, $ctor_args);
     }
 
     /* Metadata */
@@ -154,7 +177,7 @@ class PersistentLoggedStatement extends PDOStatement
 
     public function getColumnMeta(int $column) : array|false
     {
-        return $this->parent->getColumnMeta(...func_get_args());
+        return $this->parent->getColumnMeta($column);
     }
 
     /* Errors */
@@ -164,7 +187,7 @@ class PersistentLoggedStatement extends PDOStatement
         return $this->parent->errorCode();
     }
 
-    public function errorInfo() : ?array
+    public function errorInfo() : array
     {
         return $this->parent->errorInfo();
     }
