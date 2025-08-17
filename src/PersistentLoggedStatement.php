@@ -51,22 +51,11 @@ class PersistentLoggedStatement extends PDOStatement
 
     /* Attributes */
 
-    /**
-     * @param int   $attribute
-     * @param mixed $value
-     *
-     * @return bool
-     */
     public function setAttribute(int $attribute, mixed $value) : bool
     {
         return $this->parent->setAttribute($attribute, $value);
     }
 
-    /**
-     * @param int $attribute
-     *
-     * @return mixed
-     */
     public function getAttribute(int $attribute) : mixed
     {
         return $this->parent->getAttribute($attribute);
@@ -74,15 +63,6 @@ class PersistentLoggedStatement extends PDOStatement
 
     /* Binding */
 
-    /**
-     * @param mixed      $column
-     * @param mixed      $param
-     * @param int        $type
-     * @param int        $maxlen
-     * @param mixed|null $driverdata
-     *
-     * @return bool
-     */
     public function bindColumn(
         mixed $column,
         mixed &$param,
@@ -146,11 +126,6 @@ class PersistentLoggedStatement extends PDOStatement
 
     /* Execution */
 
-    /**
-     * @param array|null $inputParameters
-     *
-     * @return bool
-     */
     public function execute(?array $inputParameters = null) : bool
     {
         $result = $this->parent->execute($inputParameters);
@@ -160,24 +135,11 @@ class PersistentLoggedStatement extends PDOStatement
 
     /* Fetching */
 
-    /**
-     * @param int   $mode
-     * @param mixed ...$args
-     *
-     * @return bool
-     */
     public function setFetchMode(int $mode, mixed ...$args) : bool
     {
         return $this->parent->setFetchMode($mode, ...$args);
     }
 
-    /**
-     * @param int $fetch_style
-     * @param int $cursor_orientation
-     * @param int $cursor_offset
-     *
-     * @return mixed
-     */
     public function fetch(
         int $fetch_style = PDO::FETCH_DEFAULT,
         int $cursor_orientation = PDO::FETCH_ORI_NEXT,
@@ -187,12 +149,6 @@ class PersistentLoggedStatement extends PDOStatement
         return $this->parent->fetch($fetch_style, $cursor_orientation, $cursor_offset);
     }
 
-    /**
-     * @param int   $fetch_style
-     * @param mixed ...$args
-     *
-     * @return array
-     */
     public function fetchAll(
         int $fetch_style = PDO::FETCH_DEFAULT,
         mixed ...$args
@@ -202,11 +158,6 @@ class PersistentLoggedStatement extends PDOStatement
         return $this->parent->fetchAll($fetch_style, ...$args);
     }
 
-    /**
-     * @param int $column_number
-     *
-     * @return mixed
-     */
     public function fetchColumn(int $column_number = 0) : mixed
     {
         return $this->parent->fetchColumn($column_number);
@@ -230,27 +181,16 @@ class PersistentLoggedStatement extends PDOStatement
 
     /* Metadata */
 
-    /**
-     * @return int
-     */
     public function rowCount() : int
     {
         return $this->parent->rowCount();
     }
 
-    /**
-     * @return int
-     */
     public function columnCount() : int
     {
         return $this->parent->columnCount();
     }
 
-    /**
-     * @param int $column
-     *
-     * @return array|false
-     */
     public function getColumnMeta(int $column) : array|false
     {
         return $this->parent->getColumnMeta($column);
@@ -258,17 +198,11 @@ class PersistentLoggedStatement extends PDOStatement
 
     /* Errors */
 
-    /**
-     * @return string|null
-     */
     public function errorCode() : ?string
     {
         return $this->parent->errorCode();
     }
 
-    /**
-     * @return array
-     */
     public function errorInfo() : array
     {
         return $this->parent->errorInfo();
@@ -276,35 +210,21 @@ class PersistentLoggedStatement extends PDOStatement
 
     /* Other */
 
-    /**
-     * @return bool
-     */
     public function closeCursor() : bool
     {
         return $this->parent->closeCursor();
     }
 
-    /**
-     * @return bool|null
-     */
     public function debugDumpParams() : ?bool
     {
         return $this->parent->debugDumpParams();
     }
 
-    /**
-     * @return bool
-     */
     public function nextRowset() : bool
     {
         return $this->parent->nextRowset();
     }
 
-    /**
-     * @param array|null $inputParameters
-     *
-     * @return void
-     */
     private function log(?array $inputParameters) : void
     {
         if ($inputParameters !== null) {

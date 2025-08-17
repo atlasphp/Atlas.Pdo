@@ -10,9 +10,6 @@ declare(strict_types=1);
 
 namespace Atlas\Pdo;
 
-use function stat;
-use function strtolower;
-
 /**
  * @phpstan-type connectionStore array{
  *      DEFAULT: ?Connection,
@@ -38,12 +35,6 @@ class ConnectionLocator
      */
     public const WRITE = 'WRITE';
 
-    /**
-     * @param mixed $arg
-     * @param mixed ...$args
-     *
-     * @return static
-     */
     static public function new(mixed $arg, mixed ...$args) : static
     {
         if ($arg instanceof Connection) {
@@ -66,24 +57,12 @@ class ConnectionLocator
         self::WRITE   => [],
     ];
 
-    /**
-     * @var Connection|null
-     */
     protected ?Connection $read = null;
 
-    /**
-     * @var Connection|null
-     */
     protected ?Connection $write = null;
 
-    /**
-     * @var bool
-     */
     protected bool $lockToWrite = false;
 
-    /**
-     * @var bool
-     */
     protected bool $logQueries = false;
 
     /**
@@ -108,22 +87,11 @@ class ConnectionLocator
     ) {
     }
 
-    /**
-     * @param callable $factory
-     *
-     * @return void
-     */
     public function setDefaultFactory(callable $factory) : void
     {
         $this->defaultFactory = $factory;
     }
 
-    /**
-     * @param string   $name
-     * @param callable $factory
-     *
-     * @return void
-     */
     public function setReadFactory(
         string $name,
         callable $factory
@@ -132,12 +100,6 @@ class ConnectionLocator
         $this->readFactories[$name] = $factory;
     }
 
-    /**
-     * @param string   $name
-     * @param callable $factory
-     *
-     * @return void
-     */
     public function setWriteFactory(
         string $name,
         callable $factory
@@ -146,9 +108,6 @@ class ConnectionLocator
         $this->writeFactories[$name] = $factory;
     }
 
-    /**
-     * @return Connection
-     */
     public function getDefault() : Connection
     {
         /** @var 'DEFAULT' $type */
@@ -164,9 +123,6 @@ class ConnectionLocator
         return $this->instances[$type];
     }
 
-    /**
-     * @return Connection
-     */
     public function getRead() : Connection
     {
         if ($this->lockToWrite) {
@@ -183,9 +139,6 @@ class ConnectionLocator
         return $this->read;
     }
 
-    /**
-     * @return Connection
-     */
     public function getWrite() : Connection
     {
         if (! isset($this->write)) {
@@ -198,13 +151,6 @@ class ConnectionLocator
         return $this->write;
     }
 
-    /**
-     * @param string $type
-     * @param array  $factories
-     *
-     * @return Connection
-     * @throws Exception
-     */
     protected function getConnection(
         string $type,
         array $factories
@@ -226,13 +172,6 @@ class ConnectionLocator
         return $this->get($type, (string) array_rand($factories));
     }
 
-    /**
-     * @param string $type
-     * @param string $name
-     *
-     * @return Connection
-     * @throws Exception
-     */
     public function get(
         string $type,
         string $name
@@ -257,12 +196,6 @@ class ConnectionLocator
         return $this->instances[$type][$name];
     }
 
-    /**
-     * @param callable $factory
-     * @param string   $label
-     *
-     * @return Connection
-     */
     protected function newConnection(
         callable $factory,
         string $label
@@ -283,45 +216,26 @@ class ConnectionLocator
         return $connection;
     }
 
-    /**
-     * @return bool
-     */
     public function hasRead() : bool
     {
         return isset($this->read);
     }
 
-    /**
-     * @return bool
-     */
     public function hasWrite() : bool
     {
         return isset($this->write);
     }
 
-    /**
-     * @param bool $lockToWrite
-     *
-     * @return void
-     */
     public function lockToWrite(bool $lockToWrite = true) : void
     {
         $this->lockToWrite = $lockToWrite;
     }
 
-    /**
-     * @return bool
-     */
     public function isLockedToWrite() : bool
     {
         return $this->lockToWrite;
     }
 
-    /**
-     * @param bool $logQueries
-     *
-     * @return void
-     */
     public function logQueries(bool $logQueries = true) : void
     {
         /** @var Connection|null $defaultConnection */
@@ -351,11 +265,6 @@ class ConnectionLocator
         return $this->queries;
     }
 
-    /**
-     * @param callable $queryLogger
-     *
-     * @return void
-     */
     public function setQueryLogger(callable $queryLogger) : void
     {
         $this->queryLogger = $queryLogger;
