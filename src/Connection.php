@@ -45,11 +45,6 @@ use PDOStatement;
  */
 class Connection
 {
-    /**
-     * @param mixed ...$args
-     *
-     * @return Connection
-     */
     static public function new(mixed ...$args) : Connection
     {
         if ($args[0] instanceof PDO) {
@@ -60,11 +55,6 @@ class Connection
         return new static(new PDO(...$args));
     }
 
-    /**
-     * @param mixed ...$args
-     *
-     * @return callable
-     */
     static public function factory(mixed ...$args) : callable
     {
         return function () use ($args) {
