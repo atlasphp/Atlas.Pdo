@@ -62,19 +62,10 @@ class Connection
         };
     }
 
-    /**
-     * @var bool
-     */
     protected bool $logQueries = false;
 
-    /**
-     * @var bool
-     */
     protected bool $persistent = false;
 
-    /**
-     * @var array
-     */
     protected array $queries = [];
 
     /**
@@ -82,20 +73,11 @@ class Connection
      */
     protected mixed /* callable */ $queryLogger = null;
 
-    /**
-     * @param PDO $pdo
-     */
     public function __construct(protected PDO $pdo)
     {
         $this->persistent = (bool)$this->pdo->getAttribute(PDO::ATTR_PERSISTENT);
     }
 
-    /**
-     * @param string $method
-     * @param array  $arguments
-     *
-     * @return mixed
-     */
     public function __call(
         string $method,
         array $arguments
@@ -104,9 +86,6 @@ class Connection
         return $this->pdo->$method(...$arguments);
     }
 
-    /**
-     * @return string
-     */
     public function getDriverName() : string
     {
         /** @var string $driverName */
@@ -115,9 +94,6 @@ class Connection
         return $driverName;
     }
 
-    /**
-     * @return PDO
-     */
     public function getPdo() : PDO
     {
         return $this->pdo;
@@ -125,9 +101,6 @@ class Connection
 
     /* Transactions */
 
-    /**
-     * @return bool
-     */
     public function beginTransaction() : bool
     {
         $entry = $this->newLogEntry(__METHOD__);
@@ -136,9 +109,6 @@ class Connection
         return $result;
     }
 
-    /**
-     * @return bool
-     */
     public function commit() : bool
     {
         $entry = $this->newLogEntry(__METHOD__);
@@ -154,9 +124,6 @@ class Connection
         return $result;
     }
 
-    /**
-     * @return bool
-     */
     public function rollBack() : bool
     {
         $entry = $this->newLogEntry(__METHOD__);
@@ -167,11 +134,6 @@ class Connection
 
     /* Queries */
 
-    /**
-     * @param string $statement
-     *
-     * @return int|false
-     */
     public function exec(string $statement) : int|false
     {
         $entry = $this->newLogEntry($statement);
@@ -180,12 +142,6 @@ class Connection
         return $rowCount;
     }
 
-    /**
-     * @param string $statement
-     * @param array  $driverOptions
-     *
-     * @return PDOStatement
-     */
     public function prepare(
         string $statement,
         array $driverOptions = []
@@ -207,12 +163,6 @@ class Connection
         return $sth;
     }
 
-    /**
-     * @param string $statement
-     * @param array  $values
-     *
-     * @return PDOStatement
-     */
     public function perform(
         string $statement,
         array $values = []
@@ -228,13 +178,6 @@ class Connection
         return $sth;
     }
 
-    /**
-     * @param PDOStatement $sth
-     * @param mixed        $name
-     * @param mixed        $args
-     *
-     * @return void
-     */
     protected function performBind(
         PDOStatement $sth,
         mixed $name,
@@ -262,12 +205,6 @@ class Connection
         $sth->bindValue($name, ...$args);
     }
 
-    /**
-     * @param string $statement
-     * @param mixed  ...$fetch
-     *
-     * @return PDOStatement|false
-     */
     public function query(string $statement, mixed ...$fetch) : PDOStatement|false
     {
         $entry = $this->newLogEntry($statement);
@@ -278,12 +215,6 @@ class Connection
 
     /* Fetching */
 
-    /**
-     * @param string $statement
-     * @param array  $values
-     *
-     * @return int
-     */
     public function fetchAffected(
         string $statement,
         array $values = []
@@ -293,12 +224,6 @@ class Connection
         return $sth->rowCount();
     }
 
-    /**
-     * @param string $statement
-     * @param array  $values
-     *
-     * @return array|false
-     */
     public function fetchAll(
         string $statement,
         array $values = []
@@ -308,13 +233,6 @@ class Connection
         return $sth->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
-     * @param string $statement
-     * @param array  $values
-     * @param int    $column
-     *
-     * @return array|false
-     */
     public function fetchColumn(
         string $statement,
         array $values = [],
@@ -325,13 +243,6 @@ class Connection
         return $sth->fetchAll(PDO::FETCH_COLUMN, $column);
     }
 
-    /**
-     * @param string $statement
-     * @param array  $values
-     * @param int    $style
-     *
-     * @return array|false
-     */
     public function fetchGroup(
         string $statement,
         array $values = [],
@@ -342,12 +253,6 @@ class Connection
         return $sth->fetchAll(PDO::FETCH_GROUP | $style);
     }
 
-    /**
-     * @param string $statement
-     * @param array  $values
-     *
-     * @return array|false
-     */
     public function fetchKeyPair(
         string $statement,
         array $values = []
@@ -400,12 +305,6 @@ class Connection
         return $sth->fetchAll(PDO::FETCH_CLASS, $class, ...$args);
     }
 
-    /**
-     * @param string $statement
-     * @param array  $values
-     *
-     * @return array|false
-     */
     public function fetchOne(
         string $statement,
         array $values = []
@@ -418,13 +317,6 @@ class Connection
         return $result;
     }
 
-    /**
-     * @param string $statement
-     * @param array  $values
-     * @param int    $column
-     *
-     * @return mixed
-     */
     public function fetchValue(
         string $statement,
         array $values = [],
@@ -435,12 +327,6 @@ class Connection
         return $sth->fetchColumn($column);
     }
 
-    /**
-     * @param string $statement
-     * @param array  $values
-     *
-     * @return array|false
-     */
     public function fetchUnique(
         string $statement,
         array $values = []
@@ -452,12 +338,6 @@ class Connection
 
     /* Yielding */
 
-    /**
-     * @param string $statement
-     * @param array  $values
-     *
-     * @return Generator
-     */
     public function yieldAll(
         string $statement,
         array $values = []
@@ -470,12 +350,6 @@ class Connection
         }
     }
 
-    /**
-     * @param string $statement
-     * @param array  $values
-     *
-     * @return Generator
-     */
     public function yieldUnique(
         string $statement,
         array $values = []
@@ -490,13 +364,6 @@ class Connection
         }
     }
 
-    /**
-     * @param string $statement
-     * @param array  $values
-     * @param int    $column
-     *
-     * @return Generator
-     */
     public function yieldColumn(
         string $statement,
         array $values = [],
@@ -535,12 +402,6 @@ class Connection
         }
     }
 
-    /**
-     * @param string $statement
-     * @param array  $values
-     *
-     * @return Generator
-     */
     public function yieldKeyPair(
         string $statement,
         array $values = []
@@ -556,11 +417,6 @@ class Connection
 
     /* Logging */
 
-    /**
-     * @param bool $logQueries
-     *
-     * @return void
-     */
     public function logQueries(bool $logQueries = true) : void
     {
         $this->logQueries = $logQueries;
@@ -589,19 +445,11 @@ class Connection
         ]);
     }
 
-    /**
-     * @return array
-     */
     public function getQueries() : array
     {
         return $this->queries;
     }
 
-    /**
-     * @param callable $queryLogger
-     *
-     * @return void
-     */
     public function setQueryLogger(callable $queryLogger) : void
     {
         $this->queryLogger = $queryLogger;
