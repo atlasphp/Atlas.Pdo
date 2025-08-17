@@ -42,14 +42,14 @@ class LoggedStatement extends PDOStatement
     }
 
     /**
-     * @param string|int $parameter
-     * @param mixed      $value
-     * @param int        $dataType
+     * @param mixed $parameter
+     * @param mixed $value
+     * @param int   $dataType
      *
      * @return bool
      */
     public function bindValue(
-        string|int $parameter,
+        mixed $parameter,
         mixed $value,
         int $dataType = PDO::PARAM_STR
     ) : bool
