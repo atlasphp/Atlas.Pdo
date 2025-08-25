@@ -45,7 +45,7 @@ class LoggedStatement extends PDOStatement
         /** @var int|string $parameter */
         $result = parent::bindValue($parameter, $value, $dataType);
 
-        if ($result && $this->logEntry !== null) {
+        if ($result && !empty($this->logEntry)) {
             $this->logEntry['values'][$parameter] = $value;
         }
 
