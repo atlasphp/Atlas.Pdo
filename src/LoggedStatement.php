@@ -14,16 +14,16 @@ use PDO;
 use PDOStatement;
 
 /**
- * @phpstan-import-type  logEntry from Connection
+ * @phpstan-import-type  logEntryType from Connection
  */
 class LoggedStatement extends PDOStatement
 {
     /**
-     * @param callable $queryLogger
-     * @param logEntry $logEntry
+     * @param callable     $queryLogger
+     * @param logEntryType $logEntry
      */
     protected function __construct(
-        protected mixed /* callable */ $queryLogger,
+        protected mixed $queryLogger,
         protected array $logEntry
     ) {
         $this->logEntry['statement'] = $this->queryString;
@@ -45,7 +45,7 @@ class LoggedStatement extends PDOStatement
         /** @var int|string $parameter */
         $result = parent::bindValue($parameter, $value, $dataType);
 
-        if ($result && !empty($this->logEntry)) {
+        if ($result && $this->logEntry !== null) {
             $this->logEntry['values'][$parameter] = $value;
         }
 

@@ -32,7 +32,7 @@ use PDOStatement;
  *      options?: array<int, mixed>
  *  }
  *
- * @phpstan-type logEntry array{
+ * @phpstan-type logEntryType array{
  *      start: float,
  *      finish: ?float,
  *      duration: ?float,
@@ -71,7 +71,7 @@ class Connection
     /**
      * @var callable|null
      */
-    protected mixed /* callable */ $queryLogger = null;
+    protected mixed $queryLogger = null;
 
     public function __construct(protected PDO $pdo)
     {
@@ -153,7 +153,7 @@ class Connection
             $sth = PersistentLoggedStatement::new(
                 $sth,
                 function (array $entry) : void {
-                    /** @var logEntry $entry */
+                    /** @var logEntryType $entry */
                     $this->addLogEntry($entry);
                 },
                 $this->newLogEntry()
@@ -310,7 +310,7 @@ class Connection
         array $values = []
     ) : array|false
     {
-        $sth    = $this->perform($statement, $values);
+        $sth = $this->perform($statement, $values);
         /** @var array<array-key, mixed> $result */
         $result = $sth->fetch(PDO::FETCH_ASSOC);
 
@@ -437,7 +437,7 @@ class Connection
             LoggedStatement::CLASS,
             [
                 function (array $entry) : void {
-                    /** @var logEntry $entry */
+                    /** @var logEntryType $entry */
                     $this->addLogEntry($entry);
                 },
                 $this->newLogEntry()
@@ -458,23 +458,23 @@ class Connection
     /**
      * @param string|null $statement
      *
-     * @return logEntry
+     * @return logEntryType
      */
     protected function newLogEntry(?string $statement = null) : array
     {
         return [
-            'start'     => microtime(true),
-            'finish'    => null,
-            'duration'  => null,
+            'start' => microtime(true),
+            'finish' => null,
+            'duration' => null,
             'performed' => null,
             'statement' => $statement,
-            'values'    => [],
-            'trace'     => null,
+            'values' => [],
+            'trace' => null,
         ];
     }
 
     /**
-     * @param logEntry $entry
+     * @param logEntryType $entry
      *
      * @return void
      */

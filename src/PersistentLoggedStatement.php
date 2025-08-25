@@ -15,14 +15,14 @@ use PDO;
 use PDOStatement;
 
 /**
- * @phpstan-import-type logEntry from Connection
+ * @phpstan-import-type logEntryType from Connection
  */
 class PersistentLoggedStatement extends PDOStatement
 {
     /**
      * @param PDOStatement $parent
      * @param callable     $queryLogger
-     * @param logEntry     $logEntry
+     * @param logEntryType $logEntry
      *
      * @return static
      */
@@ -45,7 +45,7 @@ class PersistentLoggedStatement extends PDOStatement
     private mixed /* callable */ $queryLogger;
 
     /**
-     * @var logEntry
+     * @var logEntryType
      */
     private array $logEntry;
 
