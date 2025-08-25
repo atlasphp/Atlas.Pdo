@@ -6,6 +6,8 @@ use PDO;
 
 class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
 {
+    protected Connection $connection;
+
     /**
      * @var string[]
      */
@@ -76,8 +78,14 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
 
         $sth->execute();
 
-        $expect = ['id' => 1, 'name' => 'Anna'];
+        $expect = ['id' => '1', 'name' => 'Anna'];
         $actual = $sth->fetch();
+
+        /**
+         * Keeping consistent with PHP 8.0 and 8.1+
+         */
+        $actual['id'] = (string) $actual['id'];
+
         $this->assertSame($expect, $actual);
     }
 
@@ -92,8 +100,11 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
 
         $sth->execute();
 
-        $expect = ['id' => 1, 'name' => 'Anna'];
+        $expect = ['id' => '1', 'name' => 'Anna'];
         $actual = $sth->fetch();
+
+        $actual['id'] = (string) $actual['id'];
+
         $this->assertSame($expect, $actual);
     }
 
@@ -107,17 +118,21 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
         $sth->execute();
 
         $actual = $sth->fetchAll();
+        $actual[0]['id'] = (string) $actual[0]['id'];
+        $actual[1]['id'] = (string) $actual[1]['id'];
+        $actual[2]['id'] = (string) $actual[2]['id'];
+
         $expect = [
             [
-                'id'   => 1,
+                'id' => '1',
                 'name' => 'Anna',
             ],
             [
-                'id'   => 2,
+                'id' => '2',
                 'name' => 'Betty',
             ],
             [
-                'id'   => 3,
+                'id' => '3',
                 'name' => 'Clara',
             ]
         ];

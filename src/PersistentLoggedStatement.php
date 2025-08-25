@@ -13,6 +13,7 @@ namespace Atlas\Pdo;
 use BadMethodCallException;
 use PDO;
 use PDOStatement;
+use ReturnTypeWillChange;
 
 /**
  * @phpstan-import-type logEntryType from Connection
@@ -135,6 +136,7 @@ class PersistentLoggedStatement extends PDOStatement
 
     /* Fetching */
 
+    #[ReturnTypeWillChange]
     public function setFetchMode(int $mode, mixed ...$args) : bool
     {
         return $this->parent->setFetchMode($mode, ...$args);

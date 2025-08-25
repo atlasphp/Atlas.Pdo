@@ -4,8 +4,13 @@ namespace Atlas\Pdo;
 use PDO;
 use PDOStatement;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 
+/**
+ * For PHP 8.1+, a change was introduced to the PDO MySQL and Sqlite drivers
+ * regarding how integer and float values are fetched from the database.
+ * Although this affects emulated prepares, the tests below cast the values
+ * to strings to achieve consistency between PHP versions
+ */
 class ConnectionTest extends TestCase
 {
     protected PDO $pdo;
@@ -16,15 +21,15 @@ class ConnectionTest extends TestCase
      * @var string[]
      */
     protected $data = [
-        1  => 'Anna',
-        2  => 'Betty',
-        3  => 'Clara',
-        4  => 'Donna',
-        5  => 'Fiona',
-        6  => 'Gertrude',
-        7  => 'Hanna',
-        8  => 'Ione',
-        9  => 'Julia',
+        1 => 'Anna',
+        2 => 'Betty',
+        3 => 'Clara',
+        4 => 'Donna',
+        5 => 'Fiona',
+        6 => 'Gertrude',
+        7 => 'Hanna',
+        8 => 'Ione',
+        9 => 'Julia',
         10 => 'Kara',
     ];
 
@@ -136,7 +141,7 @@ class ConnectionTest extends TestCase
     {
         $stm = "SELECT id, name FROM pdotest WHERE id = :id";
         $actual = $this->connection->fetchObject($stm, ['id' => 1]);
-        $this->assertSame(1, $actual->id);
+        $this->assertSame('1', (string)$actual->id);
         $this->assertSame('Anna', $actual->name);
     }
 
@@ -149,7 +154,7 @@ class ConnectionTest extends TestCase
             'Atlas\Pdo\FakeObject',
             ['bar']
         );
-        $this->assertSame(1, $actual->id);
+        $this->assertSame('1', (string)$actual->id);
         $this->assertSame('Anna', $actual->name);
         $this->assertSame('bar', $actual->foo);
     }
