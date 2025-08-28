@@ -16,14 +16,14 @@ use PDOStatement;
 use ReturnTypeWillChange;
 
 /**
- * @phpstan-import-type logEntryType from Connection
+ * @phpstan-import-type log_entry_array from PdoCustomTypes
  */
 class PersistentLoggedStatement extends PDOStatement
 {
     /**
-     * @param PDOStatement $parent
-     * @param callable     $queryLogger
-     * @param logEntryType $logEntry
+     * @param PDOStatement    $parent
+     * @param callable        $queryLogger
+     * @param log_entry_array $logEntry
      *
      * @return static
      */
@@ -46,7 +46,7 @@ class PersistentLoggedStatement extends PDOStatement
     private mixed /* callable */ $queryLogger;
 
     /**
-     * @var logEntryType
+     * @var log_entry_array
      */
     private array $logEntry;
 

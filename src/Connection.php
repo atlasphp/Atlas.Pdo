@@ -25,23 +25,10 @@ use PDOStatement;
  * @method string quote(mixed $string, int $parameterType = PDO::PARAM_STR)
  * @method mixed setAttribute(int $attribute, mixed $value)
  *
- * @phpstan-type dsnArgs array{
- *      dsn: string,
- *      username?: string,
- *      password?: string,
- *      options?: array<int, mixed>
- *  }
- *
- * @phpstan-type logEntryType array{
- *      start: float,
- *      finish: ?float,
- *      duration: ?float,
- *      performed: ?bool,
- *      statement: ?string,
- *      values: array<array-key, mixed>,
- *      trace: ?string,
-*       connection?: string
- * }
+ * @phpstan-import-type dsn_args_array from PdoCustomTypes
+ * @phpstan-import-type log_entry_array from PdoCustomTypes
+ * @phpstan-import-type fetch_assoc_array from PdoCustomTypes
+ * @phpstan-import-type fetch_string_mixed_array from PdoCustomTypes
  */
 class Connection
 {
@@ -51,7 +38,7 @@ class Connection
             return new static($args[0]);
         }
 
-        /** @var dsnArgs $args */
+        /** @var dsn_args_array $args */
         return new static(new PDO(...$args));
     }
 
@@ -75,7 +62,7 @@ class Connection
 
     public function __construct(protected PDO $pdo)
     {
-        $this->persistent = (bool)$this->pdo->getAttribute(PDO::ATTR_PERSISTENT);
+        $this->persistent = (bool) $this->pdo->getAttribute(PDO::ATTR_PERSISTENT);
     }
 
     public function __call(
@@ -153,7 +140,7 @@ class Connection
             $sth = PersistentLoggedStatement::new(
                 $sth,
                 function (array $entry) : void {
-                    /** @var logEntryType $entry */
+                    /** @var log_entry_array $entry */
                     $this->addLogEntry($entry);
                 },
                 $this->newLogEntry()
@@ -178,6 +165,13 @@ class Connection
         return $sth;
     }
 
+    /**
+     * @param PDOStatement $sth
+     * @param int|string   $name
+     * @param mixed        $args
+     *
+     * @return void
+     */
     protected function performBind(
         PDOStatement $sth,
         mixed $name,
@@ -190,7 +184,6 @@ class Connection
         }
 
         if (! is_array($args)) {
-            /** @var int|string $name */
             $sth->bindValue($name, $args);
             return;
         }
@@ -201,7 +194,6 @@ class Connection
             $args[0] = $args[0] ? '1' : '0';
         }
 
-        /** @var int|string $name */
         $sth->bindValue($name, ...$args);
     }
 
@@ -286,10 +278,10 @@ class Connection
     /**
      * @template T of object
      * *
-     * @param string          $statement
-     * @param array           $values
-     * @param class-string<T> $class
-     * @param array<mixed>    ...$args
+     * @param string              $statement
+     * @param array               $values
+     * @param class-string<T>     $class
+     * @param callable|int|string ...$args
      *
      * @return array|false
      */
@@ -301,17 +293,22 @@ class Connection
     ) : array|false
     {
         $sth = $this->perform($statement, $values);
-        /** @var array<array-key, callable|int|string> $args */
         return $sth->fetchAll(PDO::FETCH_CLASS, $class, ...$args);
     }
 
+    /**
+     * @param string $statement
+     * @param array  $values
+     *
+     * @return fetch_assoc_array|false
+     */
     public function fetchOne(
         string $statement,
         array $values = []
     ) : array|false
     {
         $sth = $this->perform($statement, $values);
-        /** @var array<array-key, mixed> $result */
+        /** @var fetch_assoc_array $result */
         $result = $sth->fetch(PDO::FETCH_ASSOC);
 
         return $result;
@@ -358,7 +355,7 @@ class Connection
         $sth = $this->perform($statement, $values);
 
         while ($row = $sth->fetch(PDO::FETCH_UNIQUE)) {
-            /** @var array<string, mixed> $row */
+            /** @var fetch_string_mixed_array $row */
             $key = array_shift($row);
             yield $key => $row;
         }
@@ -437,7 +434,7 @@ class Connection
             LoggedStatement::CLASS,
             [
                 function (array $entry) : void {
-                    /** @var logEntryType $entry */
+                    /** @var log_entry_array $entry */
                     $this->addLogEntry($entry);
                 },
                 $this->newLogEntry()
@@ -458,7 +455,7 @@ class Connection
     /**
      * @param string|null $statement
      *
-     * @return logEntryType
+     * @return log_entry_array
      */
     protected function newLogEntry(?string $statement = null) : array
     {
@@ -474,7 +471,7 @@ class Connection
     }
 
     /**
-     * @param logEntryType $entry
+     * @param log_entry_array $entry
      *
      * @return void
      */

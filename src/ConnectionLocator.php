@@ -11,12 +11,8 @@ declare(strict_types=1);
 namespace Atlas\Pdo;
 
 /**
- * @phpstan-type connectionStore array{
- *      DEFAULT: ?Connection,
- *      READ: array<string, ?Connection>,
- *      WRITE: array<string, ?Connection>
- * }
- * @phpstan-import-type logEntryType from Connection
+ * @phpstan-import-type connection_store_array from PdoCustomTypes
+ * @phpstan-import-type log_entry_array from PdoCustomTypes
  */
 class ConnectionLocator
 {
@@ -49,7 +45,7 @@ class ConnectionLocator
     }
 
     /**
-     * @var connectionStore
+     * @var connection_store_array
      */
     protected array $instances = [
         self::DEFAULT => null,
@@ -66,7 +62,7 @@ class ConnectionLocator
     protected bool $logQueries = false;
 
     /**
-     * @var logEntryType[]
+     * @var log_entry_array[]
      */
     protected array $queries = [];
 
@@ -205,7 +201,7 @@ class ConnectionLocator
         $connection = $factory();
 
         $queryLogger = function (array $entry) use ($label) : void {
-            /** @var logEntryType $entry */
+            /** @var log_entry_array $entry */
             $entry = ['connection' => $label] + $entry;
             $this->addLogEntry($entry);
         };
@@ -258,7 +254,7 @@ class ConnectionLocator
     }
 
     /**
-     * @return logEntryType[]
+     * @return log_entry_array[]
      */
     public function getQueries() : array
     {
@@ -271,7 +267,7 @@ class ConnectionLocator
     }
 
     /**
-     * @param logEntryType $entry
+     * @param log_entry_array $entry
      *
      * @return void
      */
