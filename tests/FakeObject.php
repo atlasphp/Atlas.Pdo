@@ -1,7 +1,9 @@
 <?php
 namespace Atlas\Pdo;
 
-class FakeObject
+use stdClass;
+
+class FakeObject extends stdClass
 {
     public $foo;
 

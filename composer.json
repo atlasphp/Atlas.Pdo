@@ -17,7 +17,8 @@
         }
     ],
     "require": {
-        "php": "^8.0"
+        "php": "^8.0",
+        "ext-pdo": "*"
     },
     "autoload": {
         "psr-4": {
@@ -26,8 +27,8 @@
     },
     "require-dev": {
         "pds/skeleton": "^1.0",
-        "phpunit/phpunit": "^9.0",
-        "phpstan/phpstan": "^0.12.82"
+        "phpunit/phpunit": "^9.6",
+        "phpstan/phpstan": "^2.1"
     },
     "autoload-dev": {
         "psr-4": {

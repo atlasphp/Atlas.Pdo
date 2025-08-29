@@ -10,12 +10,26 @@ declare(strict_types=1);
 
 namespace Atlas\Pdo;
 
+/**
+ * @phpstan-import-type connection_store_entry_array from PdoCustomTypes
+ * @phpstan-import-type connection_store_array from PdoCustomTypes
+ * @phpstan-import-type log_entry_array from PdoCustomTypes
+ */
 class ConnectionLocator
 {
+    /**
+     * @var string
+     */
     public const DEFAULT = 'DEFAULT';
 
+    /**
+     * @var string
+     */
     public const READ = 'READ';
 
+    /**
+     * @var string
+     */
     public const WRITE = 'WRITE';
 
     static public function new(mixed $arg, mixed ...$args) : static
@@ -31,6 +45,9 @@ class ConnectionLocator
         return new static(Connection::factory($arg, ...$args));
     }
 
+    /**
+     * @var connection_store_array
+     */
     protected array $instances = [
         self::DEFAULT => null,
         self::READ => [],
@@ -45,12 +62,23 @@ class ConnectionLocator
 
     protected bool $logQueries = false;
 
+    /**
+     * @var log_entry_array[]
+     */
     protected array $queries = [];
 
+    /**
+     * @var callable|null
+     */
     protected mixed $queryLogger = null;
 
+    /**
+     * @param callable $defaultFactory
+     * @param array    $readFactories
+     * @param array    $writeFactories
+     */
     public function __construct(
-        protected mixed /* callable */ $defaultFactory = null,
+        protected mixed $defaultFactory = null,
         protected array $readFactories = [],
         protected array $writeFactories = []
     ) {
@@ -79,14 +107,17 @@ class ConnectionLocator
 
     public function getDefault() : Connection
     {
-        if ($this->instances[static::DEFAULT] === null) {
-            $this->instances[static::DEFAULT] = $this->newConnection(
+        /** @var 'DEFAULT' $type */
+        $type = static::DEFAULT;
+
+        if ($this->instances[$type] === null) {
+            $this->instances[$type] = $this->newConnection(
                 $this->defaultFactory,
-                static::DEFAULT
+                $type
             );
         }
 
-        return $this->instances[static::DEFAULT];
+        return $this->instances[$type];
     }
 
     public function getRead() : Connection
@@ -127,7 +158,12 @@ class ConnectionLocator
         }
 
         if (! empty($this->instances[$type])) {
-            return reset($this->instances[$type]);
+            /** @var array<string, connection_store_entry_array> $instances */
+            $instances = $this->instances;
+            /** @var Connection $connection */
+            $connection = reset($instances[$type]);
+
+            return $connection;
         }
 
         return $this->get($type, (string) array_rand($factories));
@@ -139,12 +175,14 @@ class ConnectionLocator
     ) : Connection
     {
         $prop = strtolower($type) . 'Factories';
+        /** @var array<string, callable> $factories */
         $factories = $this->$prop;
 
         if (! isset($factories[$name])) {
             throw Exception::connectionNotFound($type, $name);
         }
 
+        /** @var 'READ'|'WRITE' $type */
         if (! isset($this->instances[$type][$name])) {
             $this->instances[$type][$name] = $this->newConnection(
                 $factories[$name],
@@ -160,9 +198,11 @@ class ConnectionLocator
         string $label
     ) : Connection
     {
+        /** @var Connection $connection */
         $connection = $factory();
 
         $queryLogger = function (array $entry) use ($label) : void {
+            /** @var log_entry_array $entry */
             $entry = ['connection' => $label] + $entry;
             $this->addLogEntry($entry);
         };
@@ -195,14 +235,18 @@ class ConnectionLocator
 
     public function logQueries(bool $logQueries = true) : void
     {
-        if ($this->instances[static::DEFAULT] !== null) {
-            $this->instances[static::DEFAULT]->logQueries($logQueries);
+        /** @var Connection|null $defaultConnection */
+        $defaultConnection = $this->instances[static::DEFAULT] ?? null;
+        if ($defaultConnection !== null) {
+            $defaultConnection->logQueries($logQueries);
         }
 
         $types = [static::READ, static::WRITE];
 
         foreach ($types as $type) {
-            foreach ($this->instances[$type] as $connection) {
+            /** @var array<string, Connection> $instances */
+            $instances = $this->instances[$type];
+            foreach ($instances as $connection) {
                 $connection->logQueries($logQueries);
             }
         }
@@ -210,6 +254,9 @@ class ConnectionLocator
         $this->logQueries = $logQueries;
     }
 
+    /**
+     * @return log_entry_array[]
+     */
     public function getQueries() : array
     {
         return $this->queries;
@@ -220,10 +267,17 @@ class ConnectionLocator
         $this->queryLogger = $queryLogger;
     }
 
+    /**
+     * @param log_entry_array $entry
+     *
+     * @return void
+     */
     protected function addLogEntry(array $entry) : void
     {
-        if ($this->queryLogger !== null) {
-            ($this->queryLogger)($entry);
+        /** @var callable|null $queryLogger */
+        $queryLogger = $this->queryLogger;
+        if ($queryLogger !== null) {
+            $queryLogger($entry);
         } else {
             $this->queries[] = $entry;
         }

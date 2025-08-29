@@ -3,14 +3,23 @@ namespace Atlas\Pdo;
 
 use PDO;
 use PDOStatement;
-use stdClass;
+use PHPUnit\Framework\TestCase;
 
-class ConnectionTest extends \PHPUnit\Framework\TestCase
+/**
+ * For PHP 8.1+, a change was introduced to the PDO MySQL and Sqlite drivers
+ * regarding how integer and float values are fetched from the database.
+ * Although this affects emulated prepares, the tests below cast the values
+ * to strings to achieve consistency between PHP versions
+ */
+class ConnectionTest extends TestCase
 {
-    protected $pdo;
+    protected PDO $pdo;
 
-    protected $connection;
+    protected Connection $connection;
 
+    /**
+     * @var string[]
+     */
     protected $data = [
         1 => 'Anna',
         2 => 'Betty',
@@ -132,7 +141,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
     {
         $stm = "SELECT id, name FROM pdotest WHERE id = :id";
         $actual = $this->connection->fetchObject($stm, ['id' => 1]);
-        $this->assertSame('1', $actual->id);
+        $this->assertSame('1', (string)$actual->id);
         $this->assertSame('Anna', $actual->name);
     }
 
@@ -145,7 +154,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
             'Atlas\Pdo\FakeObject',
             ['bar']
         );
-        $this->assertSame('1', $actual->id);
+        $this->assertSame('1', (string)$actual->id);
         $this->assertSame('Anna', $actual->name);
         $this->assertSame('bar', $actual->foo);
     }

@@ -21,9 +21,14 @@ use PDOStatement;
  * @method array errorInfo()
  * @method mixed getAttribute(int $attribute)
  * @method bool inTransaction()
- * @method string lastInsertId(string $name = null)
+ * @method string lastInsertId(?string $name = null)
  * @method string quote(mixed $string, int $parameterType = PDO::PARAM_STR)
  * @method mixed setAttribute(int $attribute, mixed $value)
+ *
+ * @phpstan-import-type dsn_args_array from PdoCustomTypes
+ * @phpstan-import-type log_entry_array from PdoCustomTypes
+ * @phpstan-import-type fetch_assoc_array from PdoCustomTypes
+ * @phpstan-import-type fetch_string_mixed_array from PdoCustomTypes
  */
 class Connection
 {
@@ -33,6 +38,7 @@ class Connection
             return new static($args[0]);
         }
 
+        /** @var dsn_args_array $args */
         return new static(new PDO(...$args));
     }
 
@@ -49,11 +55,14 @@ class Connection
 
     protected array $queries = [];
 
-    protected mixed /* callable */ $queryLogger = null;
+    /**
+     * @var callable|null
+     */
+    protected mixed $queryLogger = null;
 
     public function __construct(protected PDO $pdo)
     {
-        $this->persistent = $this->pdo->getAttribute(PDO::ATTR_PERSISTENT);
+        $this->persistent = (bool) $this->pdo->getAttribute(PDO::ATTR_PERSISTENT);
     }
 
     public function __call(
@@ -66,7 +75,10 @@ class Connection
 
     public function getDriverName() : string
     {
-        return $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        /** @var string $driverName */
+        $driverName = $this->pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+
+        return $driverName;
     }
 
     public function getPdo() : PDO
@@ -128,6 +140,7 @@ class Connection
             $sth = PersistentLoggedStatement::new(
                 $sth,
                 function (array $entry) : void {
+                    /** @var log_entry_array $entry */
                     $this->addLogEntry($entry);
                 },
                 $this->newLogEntry()
@@ -152,6 +165,13 @@ class Connection
         return $sth;
     }
 
+    /**
+     * @param PDOStatement $sth
+     * @param int|string   $name
+     * @param mixed        $args
+     *
+     * @return void
+     */
     protected function performBind(
         PDOStatement $sth,
         mixed $name,
@@ -234,6 +254,16 @@ class Connection
         return $sth->fetchAll(PDO::FETCH_KEY_PAIR);
     }
 
+    /**
+     * @template T of object
+     *
+     * @param string          $statement
+     * @param array           $values
+     * @param class-string<T> $class
+     * @param array<mixed>    ...$args
+     *
+     * @return T|false
+     */
     public function fetchObject(
         string $statement,
         array $values = [],
@@ -245,6 +275,16 @@ class Connection
         return $sth->fetchObject($class, ...$args);
     }
 
+    /**
+     * @template T of object
+     * *
+     * @param string              $statement
+     * @param array               $values
+     * @param class-string<T>     $class
+     * @param callable|int|string ...$args
+     *
+     * @return array|false
+     */
     public function fetchObjects(
         string $statement,
         array $values = [],
@@ -256,13 +296,22 @@ class Connection
         return $sth->fetchAll(PDO::FETCH_CLASS, $class, ...$args);
     }
 
+    /**
+     * @param string $statement
+     * @param array  $values
+     *
+     * @return fetch_assoc_array|false
+     */
     public function fetchOne(
         string $statement,
         array $values = []
     ) : array|false
     {
         $sth = $this->perform($statement, $values);
-        return $sth->fetch(PDO::FETCH_ASSOC);
+        /** @var fetch_assoc_array $result */
+        $result = $sth->fetch(PDO::FETCH_ASSOC);
+
+        return $result;
     }
 
     public function fetchValue(
@@ -306,6 +355,7 @@ class Connection
         $sth = $this->perform($statement, $values);
 
         while ($row = $sth->fetch(PDO::FETCH_UNIQUE)) {
+            /** @var fetch_string_mixed_array $row */
             $key = array_shift($row);
             yield $key => $row;
         }
@@ -320,10 +370,21 @@ class Connection
         $sth = $this->perform($statement, $values);
 
         while ($row = $sth->fetch(PDO::FETCH_NUM)) {
+            /** @var array<int, mixed> $row */
             yield $row[$column];
         }
     }
 
+    /**
+     * @template T of object
+     *
+     * @param string          $statement
+     * @param array           $values
+     * @param class-string<T> $class
+     * @param array<mixed>    ...$args
+     *
+     * @return Generator
+     */
     public function yieldObjects(
         string $statement,
         array $values = [],
@@ -346,6 +407,7 @@ class Connection
         $sth = $this->perform($statement, $values);
 
         while ($row = $sth->fetch(PDO::FETCH_NUM)) {
+            /** @var array<int, mixed> $row */
             yield $row[0] => $row[1];
         }
     }
@@ -372,6 +434,7 @@ class Connection
             LoggedStatement::CLASS,
             [
                 function (array $entry) : void {
+                    /** @var log_entry_array $entry */
                     $this->addLogEntry($entry);
                 },
                 $this->newLogEntry()
@@ -389,7 +452,12 @@ class Connection
         $this->queryLogger = $queryLogger;
     }
 
-    protected function newLogEntry(string $statement = null) : array
+    /**
+     * @param string|null $statement
+     *
+     * @return log_entry_array
+     */
+    protected function newLogEntry(?string $statement = null) : array
     {
         return [
             'start' => microtime(true),
@@ -402,6 +470,11 @@ class Connection
         ];
     }
 
+    /**
+     * @param log_entry_array $entry
+     *
+     * @return void
+     */
     protected function addLogEntry(array $entry) : void
     {
         if (! $this->logQueries) {

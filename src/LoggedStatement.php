@@ -13,16 +13,23 @@ namespace Atlas\Pdo;
 use PDO;
 use PDOStatement;
 
+/**
+ * @phpstan-import-type  log_entry_array from PdoCustomTypes
+ */
 class LoggedStatement extends PDOStatement
 {
+    /**
+     * @param callable             $queryLogger
+     * @param log_entry_array $logEntry
+     */
     protected function __construct(
-        protected mixed /* callable */ $queryLogger,
+        protected mixed $queryLogger,
         protected array $logEntry
     ) {
         $this->logEntry['statement'] = $this->queryString;
     }
 
-    public function execute(array $inputParameters = null) : bool
+    public function execute(?array $inputParameters = null) : bool
     {
         $result = parent::execute($inputParameters);
         $this->log($inputParameters);
@@ -35,9 +42,10 @@ class LoggedStatement extends PDOStatement
         int $dataType = PDO::PARAM_STR
     ) : bool
     {
+        /** @var int|string $parameter */
         $result = parent::bindValue($parameter, $value, $dataType);
 
-        if ($result && $this->logEntry !== null) {
+        if ($result && !empty($this->logEntry)) {
             $this->logEntry['values'][$parameter] = $value;
         }
 

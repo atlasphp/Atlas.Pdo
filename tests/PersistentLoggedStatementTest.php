@@ -3,11 +3,14 @@ namespace Atlas\Pdo;
 
 use BadMethodCallException;
 use PDO;
-use PDOStatement;
-use stdClass;
 
 class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
 {
+    protected Connection $connection;
+
+    /**
+     * @var string[]
+     */
     protected $data = [
         1 => 'Anna',
         2 => 'Betty',
@@ -77,6 +80,12 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
 
         $expect = ['id' => '1', 'name' => 'Anna'];
         $actual = $sth->fetch();
+
+        /**
+         * Keeping consistent with PHP 8.0 and 8.1+
+         */
+        $actual['id'] = (string) $actual['id'];
+
         $this->assertSame($expect, $actual);
     }
 
@@ -93,17 +102,26 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
 
         $expect = ['id' => '1', 'name' => 'Anna'];
         $actual = $sth->fetch();
+
+        $actual['id'] = (string) $actual['id'];
+
         $this->assertSame($expect, $actual);
     }
 
     public function testFetchAll()
     {
-        $sth = $this->connection->prepare('SELECT * FROM pdotest WHERE id <= 3 ORDER BY id');
+        $sth = $this->connection->prepare(
+            'SELECT * FROM pdotest WHERE id <= 3 ORDER BY id'
+        );
         $sth->setFetchMode(PDO::FETCH_ASSOC);
 
         $sth->execute();
 
         $actual = $sth->fetchAll();
+        $actual[0]['id'] = (string) $actual[0]['id'];
+        $actual[1]['id'] = (string) $actual[1]['id'];
+        $actual[2]['id'] = (string) $actual[2]['id'];
+
         $expect = [
             [
                 'id' => '1',
