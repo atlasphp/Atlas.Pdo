@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace Atlas\Pdo;
 
 /**
+ * @phpstan-import-type connection_store_entry_array from PdoCustomTypes
  * @phpstan-import-type connection_store_array from PdoCustomTypes
  * @phpstan-import-type log_entry_array from PdoCustomTypes
  */
@@ -157,7 +158,7 @@ class ConnectionLocator
         }
 
         if (! empty($this->instances[$type])) {
-            /** @var array<string, array<string, Connection>> $instances */
+            /** @var array<string, connection_store_entry_array> $instances */
             $instances = $this->instances;
             /** @var Connection $connection */
             $connection = reset($instances[$type]);

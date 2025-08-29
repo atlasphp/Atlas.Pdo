@@ -11,12 +11,12 @@ declare(strict_types=1);
 namespace Atlas\Pdo;
 
 /**
- * @phpstan-type connection_entry array<string, ?Connection>
+ * @phpstan-type connection_store_entry_array array<string, Connection>
  *
  * @phpstan-type connection_store_array array{
  *      DEFAULT: ?Connection,
- *      READ: connection_entry,
- *      WRITE: connection_entry
+ *      READ: connection_store_entry_array,
+ *      WRITE: connection_store_entry_array
  * }
  *
  * @phpstan-type dsn_args_array array{
