@@ -13,6 +13,7 @@ namespace Atlas\Pdo;
 use BadMethodCallException;
 use PDO;
 use PDOStatement;
+use ReturnTypeWillChange;
 
 class PersistentLoggedStatement extends PDOStatement
 {
@@ -96,7 +97,7 @@ class PersistentLoggedStatement extends PDOStatement
 
     /* Execution */
 
-    public function execute(array $inputParameters = null) : bool
+    public function execute(?array $inputParameters = null) : bool
     {
         $result = $this->parent->execute($inputParameters);
         $this->log($inputParameters);
@@ -105,13 +106,14 @@ class PersistentLoggedStatement extends PDOStatement
 
     /* Fetching */
 
+    #[ReturnTypeWillChange]
     public function setFetchMode(int $mode, mixed ...$args) : bool
     {
         return $this->parent->setFetchMode(...func_get_args());
     }
 
     public function fetch(
-        int $fetch_style = null,
+        ?int $fetch_style = null,
         int $cursor_orientation = PDO::FETCH_ORI_NEXT,
         int $cursor_offset = 0
     ) : mixed
@@ -119,6 +121,7 @@ class PersistentLoggedStatement extends PDOStatement
         return $this->parent->fetch(...func_get_args());
     }
 
+    #[ReturnTypeWillChange]
     public function fetchAll(
         int $fetch_style = PDO::FETCH_BOTH,
         mixed ...$args
@@ -164,6 +167,7 @@ class PersistentLoggedStatement extends PDOStatement
         return $this->parent->errorCode();
     }
 
+    #[ReturnTypeWillChange]
     public function errorInfo() : ?array
     {
         return $this->parent->errorInfo();
