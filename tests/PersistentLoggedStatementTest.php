@@ -8,6 +8,8 @@ use stdClass;
 
 class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
 {
+    protected Connection $connection;
+
     protected $data = [
         1 => 'Anna',
         2 => 'Betty',
@@ -77,6 +79,12 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
 
         $expect = ['id' => '1', 'name' => 'Anna'];
         $actual = $sth->fetch();
+
+        /**
+         * Keeping consistent with PHP 8.0 and 8.1+
+         */
+        $actual['id'] = (string) $actual['id'];
+
         $this->assertSame($expect, $actual);
     }
 
@@ -93,6 +101,9 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
 
         $expect = ['id' => '1', 'name' => 'Anna'];
         $actual = $sth->fetch();
+
+        $actual['id'] = (string) $actual['id'];
+
         $this->assertSame($expect, $actual);
     }
 
@@ -104,6 +115,10 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
         $sth->execute();
 
         $actual = $sth->fetchAll();
+        $actual[0]['id'] = (string) $actual[0]['id'];
+        $actual[1]['id'] = (string) $actual[1]['id'];
+        $actual[2]['id'] = (string) $actual[2]['id'];
+
         $expect = [
             [
                 'id' => '1',
