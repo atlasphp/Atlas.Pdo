@@ -95,7 +95,7 @@ jobs:
         with:
           composer-options: "--prefer-dist"
 
-      - name: "Run Unit Tests"
+      - name: "QA Checks"
         if: always()
         run: |
-          composer test
+          composer test && composer stan
