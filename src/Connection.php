@@ -363,13 +363,13 @@ class Connection
         if (! $this->logQueries) {
             $this->pdo->setAttribute(
                 PDO::ATTR_STATEMENT_CLASS,
-                [PDOStatement::CLASS]
+                [PDOStatement::class]
             );
             return;
         }
 
         $this->pdo->setAttribute(PDO::ATTR_STATEMENT_CLASS, [
-            LoggedStatement::CLASS,
+            LoggedStatement::class,
             [
                 function (array $entry) : void {
                     $this->addLogEntry($entry);

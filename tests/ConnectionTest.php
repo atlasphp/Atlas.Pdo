@@ -53,7 +53,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
     {
         $factory = Connection::factory('sqlite::memory:');
         $connection = $factory();
-        $this->assertInstanceOf(Connection::CLASS, $connection);
+        $this->assertInstanceOf(Connection::class, $connection);
     }
 
     public function test__call()
@@ -77,7 +77,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
     public function testPerform()
     {
         $stm = $this->connection->perform("SELECT * FROM pdotest WHERE id = ?", [1]);
-        $this->assertInstanceOf(PDOStatement::CLASS, $stm);
+        $this->assertInstanceOf(PDOStatement::class, $stm);
     }
 
     public function testFetchAffected()
@@ -324,7 +324,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
     {
         $stm = "SELECT id, name FROM pdotest WHERE id = 1";
         $sth = $this->connection->query($stm);
-        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
     }
 
     public function testQueryLogging()
@@ -332,13 +332,13 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         // query logging turned off
         $stm = "SELECT id, name FROM pdotest WHERE id = :id";
         $sth = $this->connection->perform($stm, ['id' => [false, PDO::PARAM_BOOL]]);
-        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
         $this->assertSame([], $this->connection->getQueries());
 
         // query logging turned on
         $this->connection->logQueries(true);
         $sth = $this->connection->perform($stm, ['id' => [false, PDO::PARAM_BOOL]]);
-        $this->assertInstanceOf(LoggedStatement::CLASS, $sth);
+        $this->assertInstanceOf(LoggedStatement::class, $sth);
 
         $queries = $this->connection->getQueries();
         $this->assertCount(1, $queries);
@@ -369,7 +369,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         // query logging turned off
         $stm = "SELECT id, name FROM pdotest WHERE id = :id";
         $sth = $this->connection->prepare($stm);
-        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
         $this->assertTrue($sth->execute(['id' => '0']));
         $this->assertSame([], $this->connection->getQueries());
 
@@ -377,7 +377,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         $this->connection->logQueries(true);
         $stm = "SELECT id, name FROM pdotest WHERE id = :id";
         $sth = $this->connection->prepare($stm);
-        $this->assertInstanceOf(LoggedStatement::CLASS, $sth);
+        $this->assertInstanceOf(LoggedStatement::class, $sth);
 
         $this->assertTrue($sth->execute(['id' => '0']));
 
@@ -402,8 +402,8 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
 
         // prepare from native pdo
         $sth = $this->pdo->prepare($stm);
-        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
-        $this->assertInstanceOf(LoggedStatement::CLASS, $sth);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
+        $this->assertInstanceOf(LoggedStatement::class, $sth);
 
         // logs even though prepared directly from PDO
         $this->assertCount(0, $this->connection->getQueries());
@@ -430,8 +430,8 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
 
         // when prepared from native PDO, should be PDOStatement
         $sth = $persistent->getPdo()->prepare("SELECT id FROM pdotest WHERE id = :id");
-        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
-        $this->assertNotInstanceOf(PersistentLoggedStatement::CLASS, $sth);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
+        $this->assertNotInstanceOf(PersistentLoggedStatement::class, $sth);
 
         // should not log, because prepared directly from PDO
         $this->assertTrue($sth->execute(['id' => 0]));
@@ -440,8 +440,8 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
 
         // when prepared from Connection, should be LoggedStatement
         $sth = $persistent->prepare("SELECT id FROM pdotest WHERE id = :id");
-        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
-        $this->assertInstanceOf(PersistentLoggedStatement::CLASS, $sth);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
+        $this->assertInstanceOf(PersistentLoggedStatement::class, $sth);
 
         // should log, because prepared from Connection
         $this->assertTrue($sth->execute(['id' => 0]));

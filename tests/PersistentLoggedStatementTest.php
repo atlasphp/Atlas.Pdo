@@ -57,7 +57,7 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
     public function testInstantiation()
     {
         $sth = $this->connection->prepare('SELECT * FROM pdotest WHERE name = :name');
-        $this->assertInstanceOf(PersistentLoggedStatement::CLASS, $sth);
+        $this->assertInstanceOf(PersistentLoggedStatement::class, $sth);
     }
 
     public function testBindColumn_badMethod()
@@ -65,7 +65,7 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
         $sth = $this->connection->prepare('SELECT * FROM pdotest WHERE name = "Anna"');
         $sth->setFetchMode(PDO::FETCH_ASSOC);
         $sth->execute();
-        $this->expectException(BadMethodCallException::CLASS);
+        $this->expectException(BadMethodCallException::class);
         $sth->bindColumn('name', $name);
     }
 

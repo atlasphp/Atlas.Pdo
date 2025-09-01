@@ -54,7 +54,7 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
     {
         $connection = Connection::new('sqlite::memory:');
         $actual = ConnectionLocator::new($connection);
-        $this->assertInstanceOf(ConnectionLocator::CLASS, $actual);
+        $this->assertInstanceOf(ConnectionLocator::class, $actual);
         $this->assertSame($connection, $actual->getDefault());
     }
 
@@ -62,7 +62,7 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
     {
         $pdo = new Pdo('sqlite::memory:');
         $actual = ConnectionLocator::new($pdo);
-        $this->assertInstanceOf(ConnectionLocator::CLASS, $actual);
+        $this->assertInstanceOf(ConnectionLocator::class, $actual);
         $this->assertSame($pdo, $actual->getDefault()->getPdo());
     }
 
@@ -128,7 +128,7 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
     public function testGetReadMissing()
     {
         $locator = $this->newLocator($this->read, $this->write);
-        $this->expectException(Exception::CLASS);
+        $this->expectException(Exception::class);
         $locator->get($locator::READ, 'no-such-connection');
     }
 
@@ -173,7 +173,7 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
     public function testGetWriteMissing()
     {
         $locator = $this->newLocator($this->read, $this->write);
-        $this->expectException(Exception::CLASS);
+        $this->expectException(Exception::class);
         $locator->get($locator::WRITE, 'no-such-connection');
     }
 
@@ -201,7 +201,7 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
         // query logging turned off
         $connection = $locator->getDefault();
         $sth = $connection->perform($stm);
-        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
         $this->assertSame([], $locator->getQueries());
 
         // query logging turned on
@@ -209,7 +209,7 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
 
         // default connection
         $sth = $connection->perform($stm);
-        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
 
         // read and write connections
         $types = ['read', 'write'];
@@ -218,7 +218,7 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
                 $name = $type . $i;
                 $connection = $locator->get(strtoupper($type), $name);
                 $sth = $connection->perform($stm);
-                $this->assertInstanceOf(PDOStatement::CLASS, $sth);
+                $this->assertInstanceOf(PDOStatement::class, $sth);
             }
         }
 
@@ -269,7 +269,7 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
         // default connection
         $connection = $locator->getDefault();
         $sth = $connection->perform($stm);
-        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
 
         // read and write connections
         $types = ['read', 'write'];
@@ -278,7 +278,7 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
                 $name = $type . $i;
                 $connection = $locator->get(strtoupper($type), $name);
                 $sth = $connection->perform($stm);
-                $this->assertInstanceOf(PDOStatement::CLASS, $sth);
+                $this->assertInstanceOf(PDOStatement::class, $sth);
             }
         }
 
@@ -321,7 +321,7 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
 
         $connection = $locator->getDefault();
         $sth = $connection->perform('SELECT * FROM sqlite_master');
-        $this->assertInstanceOf(PDOStatement::CLASS, $sth);
+        $this->assertInstanceOf(PDOStatement::class, $sth);
 
         $this->assertCount(1, $entries);
         $this->assertSame('SELECT * FROM sqlite_master', $entries[0]['statement']);
@@ -339,6 +339,6 @@ class ConnectionLocatorTest extends \PHPUnit\Framework\TestCase
 
         $connection = $locator->get(ConnectionLocator::WRITE, 'persistent-connection');
 
-        $this->assertInstanceOf(Connection::CLASS, $connection);
+        $this->assertInstanceOf(Connection::class, $connection);
     }
 }
