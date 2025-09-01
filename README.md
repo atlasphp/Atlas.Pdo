@@ -1,7 +1,7 @@
 # Atlas.Pdo
 
-This package provides a _Connection_ that decorates any [PDO]
-(http://php.net/PDO) instance to provide the following:
+This package provides a _Connection_ that decorates any [PDO][]
+instance to provide the following:
 
 - A `perform()` that method acts just like `query()`, but binds values to a
   prepared statement as part of the call.
@@ -19,3 +19,5 @@ retain named _Connection_ objects for default, read (slave), and write
 (master) databases.
 
 Read the documentation [here](http://atlasphp.io/dymaxion/pdo/).
+
+[PDO]: http://php.net/PDO
