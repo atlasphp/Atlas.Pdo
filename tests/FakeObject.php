@@ -1,11 +1,13 @@
 <?php
 namespace Atlas\Pdo;
 
-use stdClass;
-
-class FakeObject extends stdClass
+class FakeObject
 {
     public $foo;
+
+    public $id;
+
+    public $name;
 
     public function __construct($foo)
     {

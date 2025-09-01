@@ -96,9 +96,6 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
 
         $expect = ['id' => '1', 'name' => 'Anna'];
         $actual = $sth->fetch();
-
-        $actual['id'] = $actual['id'];
-
         $this->assertSame($expect, $actual);
     }
 
@@ -110,10 +107,6 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
         $sth->execute();
 
         $actual = $sth->fetchAll();
-        $actual[0]['id'] = $actual[0]['id'];
-        $actual[1]['id'] = $actual[1]['id'];
-        $actual[2]['id'] = $actual[2]['id'];
-
         $expect = [
             [
                 'id' => '1',
@@ -182,7 +175,7 @@ class PersistentLoggedStatementTest extends \PHPUnit\Framework\TestCase
             'flags' => [],
             'name' => 'name',
             'precision' => 0,
-            'pdo_type' => '2'
+            'pdo_type' => 2
         ];
         $this->assertEquals($expect, $actual);
     }

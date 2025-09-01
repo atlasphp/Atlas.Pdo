@@ -132,7 +132,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
     public function testFetchObject()
     {
         $stm = "SELECT id, name FROM pdotest WHERE id = :id";
-        $actual = $this->connection->fetchObject($stm, ['id' => '1']);
+        $actual = $this->connection->fetchObject($stm, ['id' => 1]);
         $this->assertSame('1', $actual->id);
         $this->assertSame('Anna', $actual->name);
     }
@@ -142,7 +142,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         $stm = "SELECT id, name FROM pdotest WHERE id = :id";
         $actual = $this->connection->fetchObject(
             $stm,
-            ['id' => '1'],
+            ['id' => 1],
             'Atlas\Pdo\FakeObject',
             ['bar']
         );
