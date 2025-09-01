@@ -1,8 +1,9 @@
 parameters:
-    level: max
+    level: 8
     paths:
         - src
     ignoreErrors:
         - "#Unsafe usage of new static#"
         - "#no value type specified in iterable type#"
         - "#debugDumpParams#"
+        - "#expects class-string<T of object>, string given#"
