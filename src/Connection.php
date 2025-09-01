@@ -389,7 +389,7 @@ class Connection
         $this->queryLogger = $queryLogger;
     }
 
-    protected function newLogEntry(string $statement = null) : array
+    protected function newLogEntry(?string $statement = null) : array
     {
         return [
             'start' => microtime(true),

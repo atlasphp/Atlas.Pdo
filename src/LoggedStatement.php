@@ -22,7 +22,7 @@ class LoggedStatement extends PDOStatement
         $this->logEntry['statement'] = $this->queryString;
     }
 
-    public function execute(array $inputParameters = null) : bool
+    public function execute(?array $inputParameters = null) : bool
     {
         $result = parent::execute($inputParameters);
         $this->log($inputParameters);
