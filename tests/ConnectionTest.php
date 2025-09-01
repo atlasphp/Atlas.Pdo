@@ -31,6 +31,7 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         }
 
         $this->pdo = new PDO('sqlite::memory:');
+        $this->pdo->setAttribute(PDO::ATTR_STRINGIFY_FETCHES, true);
         $this->connection = new Connection($this->pdo);
 
         $this->connection->exec("CREATE TABLE pdotest (
@@ -131,8 +132,8 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
     public function testFetchObject()
     {
         $stm = "SELECT id, name FROM pdotest WHERE id = :id";
-        $actual = $this->connection->fetchObject($stm, ['id' => 1]);
-        $this->assertSame('1', (string)$actual->id);
+        $actual = $this->connection->fetchObject($stm, ['id' => '1']);
+        $this->assertSame('1', $actual->id);
         $this->assertSame('Anna', $actual->name);
     }
 
@@ -141,11 +142,11 @@ class ConnectionTest extends \PHPUnit\Framework\TestCase
         $stm = "SELECT id, name FROM pdotest WHERE id = :id";
         $actual = $this->connection->fetchObject(
             $stm,
-            ['id' => 1],
+            ['id' => '1'],
             'Atlas\Pdo\FakeObject',
             ['bar']
         );
-        $this->assertSame('1', (string)$actual->id);
+        $this->assertSame('1', $actual->id);
         $this->assertSame('Anna', $actual->name);
         $this->assertSame('bar', $actual->foo);
     }
