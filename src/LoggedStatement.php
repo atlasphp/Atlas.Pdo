@@ -20,6 +20,7 @@ class LoggedStatement extends PDOStatement
         protected array $logEntry
     ) {
         $this->logEntry['statement'] = $this->queryString;
+        $this->logEntry['start'] = microtime(true);
     }
 
     public function execute(?array $inputParameters = null) : bool
