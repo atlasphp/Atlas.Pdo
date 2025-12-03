@@ -20,13 +20,16 @@ class LoggedStatement extends PDOStatement
         protected array $logEntry
     ) {
         $this->logEntry['statement'] = $this->queryString;
+        $this->logEntry['start'] = microtime(true);
     }
 
     public function execute(?array $inputParameters = null) : bool
     {
-        $result = parent::execute($inputParameters);
-        $this->log($inputParameters);
-        return $result;
+        try {
+            return parent::execute($inputParameters);
+        } finally {
+            $this->log($inputParameters);
+        }
     }
 
     public function bindValue(
