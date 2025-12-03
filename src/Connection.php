@@ -13,6 +13,7 @@ namespace Atlas\Pdo;
 use Generator;
 use PDO;
 use PDOStatement;
+use Throwable;
 
 /**
  * Decorator for PDO instances.
@@ -142,7 +143,15 @@ class Connection
         array $values = []
     ) : PDOStatement
     {
-        $sth = $this->prepare($statement);
+        try {
+            $sth = $this->prepare($statement);
+        } catch (Throwable $error) {
+            $this->addLogEntry(
+                $this->newLogEntry($statement, $error)
+            );
+
+            throw $error;
+        }
 
         foreach ($values as $name => $args) {
             $this->performBind($sth, $name, $args);
@@ -180,9 +189,11 @@ class Connection
     public function query(string $statement, mixed ...$fetch) : PDOStatement|false
     {
         $entry = $this->newLogEntry($statement);
-        $sth = $this->pdo->query($statement, ...$fetch);
-        $this->addLogEntry($entry);
-        return $sth;
+        try {
+            return $this->pdo->query($statement, ...$fetch);
+        } finally {
+            $this->addLogEntry($entry);
+        }
     }
 
     /* Fetching */
@@ -389,16 +400,17 @@ class Connection
         $this->queryLogger = $queryLogger;
     }
 
-    protected function newLogEntry(?string $statement = null) : array
+    protected function newLogEntry(?string $statement = null, ?\Throwable $error = null) : array
     {
         return [
             'start' => microtime(true),
             'finish' => null,
             'duration' => null,
-            'performed' => null,
+            'performed' => $error ? false : null,
             'statement' => $statement,
             'values' => [],
-            'trace' => null,
+            'trace' => $error ? $error->getTrace() : null,
+            'error' => $error,
         ];
     }
 
@@ -406,6 +418,10 @@ class Connection
     {
         if (! $this->logQueries) {
             return;
+        }
+
+        if ($entry['error']) {
+            $entry['performed'] = false;
         }
 
         if ($entry['performed'] === null) {
